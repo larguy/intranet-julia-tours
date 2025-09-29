@@ -1,0 +1,170 @@
+.tiptap-container {
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    overflow: hidden; 
+}
+
+.tiptap-menu-bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    padding: 8px;
+    border-bottom: 1px solid #ccc;
+    background-color: #f8f9fa;
+}
+
+.tiptap-menu-group {
+    display: flex;
+    align-items: center;
+    border-right: 1px solid #ddd;
+    padding: 0 8px;
+    margin-right: 8px;
+}
+.tiptap-menu-group:last-child {
+    border-right: none;
+}
+
+.tiptap-menu-bar button, .tiptap-file-label, .tiptap-menu-bar select {
+    background: none;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    padding: 6px 10px;
+    margin: 2px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    font-size: 0.9em;
+}
+
+.tiptap-menu-bar button:hover, .tiptap-file-label:hover, .tiptap-menu-bar select:hover {
+    background-color: #e9ecef;
+}
+
+.tiptap-menu-bar button.is-active {
+    background-color: #dee2e6;
+    border-color: #adb5bd;
+}
+
+.tiptap-color-label {
+    font-size: 0.8em;
+    margin: 0 5px 0 10px;
+    color: #555;
+}
+
+.tiptap-menu-bar input[type="color"] {
+    width: 25px;
+    height: 25px;
+    padding: 2px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background-color: white;
+    cursor: pointer;
+}
+
+.ProseMirror {
+    padding: 15px;
+    min-height: 200px;
+    outline: none;
+    line-height: 1.6;
+}
+
+.ProseMirror p { margin: 0 0 1em 0; }
+
+.ProseMirror img {
+    max-width: 100%;
+    height: auto;
+    display: block; 
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.ProseMirror img[data-align="left"] {
+    float: left;
+    margin-right: 1em;
+    margin-left: 0;
+}
+.ProseMirror img[data-align="right"] {
+    float: right;
+    margin-left: 1em;
+    margin-right: 0;
+}
+
+.ProseMirror img.ProseMirror-selectednode {
+    outline: 3px solid #68CEF8;
+}
+
+
+.ProseMirror img {
+    max-width: 75%;
+    height: auto;
+    display: block;
+    margin: 1em auto;
+    border-radius: 8px;
+}
+
+.ProseMirror img.size-small {
+    max-width: 25%;
+}
+
+.ProseMirror img.size-medium {
+    max-width: 50%;
+}
+
+.ProseMirror img.size-large {
+    max-width: 100%;
+}
+
+.ProseMirror img.ProseMirror-selectednode {
+    outline: 3px solid #68CEF8;
+}
+
+
+   en Novedades.css y InformacionPorSector.css */
+.post-content img {
+    max-width: 75%;
+    height: auto;
+    display: block;
+    margin: 1em auto;
+    border-radius: 8px;
+}
+
+.ProseMirror img {
+    height: auto;
+    display: block;
+    margin: 1em auto;
+    border-radius: 8px;
+}
+
+.ProseMirror img.size-15 { max-width: 15%; }
+.ProseMirror img.size-25 { max-width: 25%; }
+.ProseMirror img.size-35 { max-width: 35%; }
+.ProseMirror img.size-50 { max-width: 50%; }
+.ProseMirror img.size-65 { max-width: 65%; }
+.ProseMirror img.size-75 { max-width: 75%; }
+.ProseMirror img.size-85 { max-width: 85%; }
+.ProseMirror img.size-100 { max-width: 100%; }
+
+.ProseMirror img.ProseMirror-selectednode {
+    outline: 3px solid #68CEF8;
+}
+
+.tiptap-menu-label {
+    font-size: 0.8em;
+    margin: 0 5px 0 0;
+    color: #555;
+    font-weight: bold;
+}
+
+.tiptap-menu-bar button svg,
+.tiptap-menu-bar label svg {
+    display: block; 
+}
+
+
+.ProseMirror img, 
+.quill-wrapper .ql-editor img {
+    max-width: 100%;
+    height: auto;
+    display: block; 
+    cursor: pointer; 
+    border-radius: 8px;
+}

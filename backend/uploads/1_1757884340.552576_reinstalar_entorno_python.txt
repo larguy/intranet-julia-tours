@@ -1,0 +1,30 @@
+reinstalar entorno python
+
+# 1. Ve a la carpeta del proyecto
+cd "C:\Users\Leandro_Ramos\Documents\Intra JT\backend"
+
+# 2. (Si está activo) Desactiva el venv
+deactivate
+
+# 3. Borra el venv roto
+Remove-Item -Recurse -Force venv
+
+# 4. Crea un venv nuevo y limpio
+py -m venv venv
+
+# 5. Activa el nuevo venv
+.\venv\Scripts\Activate.ps1
+
+# 6. Reinstala TODO lo que necesitas
+pip install Flask Flask-Bcrypt Flask-SQLAlchemy psycopg2-binary Flask-Mail
+
+# 7. Ejecuta tu app
+python app.py
+
+
+--------------
+
+# Después de crear y activar el venv nuevo
+pip install -r requirements.txt
+
+este comando instalara todo lo que necesitar para tu aplicacion

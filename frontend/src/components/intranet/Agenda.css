@@ -1,0 +1,200 @@
+/* src/components/intranet/Agenda.css */
+
+/* --- 1. Controles Superiores (Búsqueda y Botón Crear) --- */
+.agenda-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    flex-wrap: wrap; /* Para pantallas pequeñas */
+    gap: 15px;
+}
+
+.agenda-controls .search-bar {
+    flex-grow: 1; /* Ocupa el espacio disponible */
+    padding: 12px;
+    font-size: 1em;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+.agenda-controls .btn-primary {
+    margin-bottom: 23px;
+    width: auto; /* El botón no ocupa el 100% */
+    padding: 12px 20px;
+}
+
+/* --- 2. Tabla de la Lista de Contactos --- */
+.agenda-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+    background-color: white;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    border-radius: 8px;
+    overflow: hidden; /* Para que el borde redondeado se aplique a la tabla */
+}
+
+.agenda-table th,
+.agenda-table td {
+    padding: 15px;
+    border-bottom: 1px solid #eee;
+}
+
+.agenda-table thead th {
+    background-color: #f8f9fa;
+    font-weight: bold;
+    color: #495057;
+}
+
+.agenda-table tbody tr {
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.agenda-table tbody tr:hover {
+    background-color: #f0f8ff; /* Un azul claro sutil al pasar el mouse */
+}
+
+.agenda-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+/* --- 3. Vista de Detalle del Contacto --- */
+.contact-detail {
+    background-color: white;
+    padding: 30px;
+    border-radius: 8px;
+    max-width: 700px;
+    margin: 0 auto;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+.contact-detail .back-button {
+    background: none;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 8px 15px;
+    cursor: pointer;
+    font-weight: bold;
+    margin-bottom: 20px;
+    transition: background-color 0.2s;
+}
+
+.contact-detail .back-button:hover {
+    background-color: #f0f0f0;
+}
+
+.contact-detail h1 {
+    margin-top: 0;
+    margin-bottom: 25px;
+    border-bottom: 2px solid var(--primary-color);
+    padding-bottom: 10px;
+}
+
+.contact-detail .profile-details p {
+    margin: 12px 0;
+    font-size: 1.1em;
+    color: #555;
+    line-height: 1.6;
+}
+
+.contact-detail .profile-details p strong {
+    color: #333;
+    display: inline-block;
+    width: 120px; /* Ancho fijo para las etiquetas para alinear */
+}
+
+.detail-actions {
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 1px solid #eee;
+    display: flex;
+    gap: 15px;
+}
+
+.detail-actions .btn-primary,
+.detail-actions .btn-danger {
+    width: auto;
+    padding: 10px 20px;
+}
+
+.btn-danger {
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+.btn-danger:hover {
+    background-color: #c82333;
+}
+
+/* --- 4. Formulario de Crear/Editar Contacto --- */
+.contact-form {
+    background-color: white;
+    padding: 30px;
+    border-radius: 8px;
+    max-width: 600px;
+    margin: 0 auto;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+.contact-form h2 {
+    text-align: center;
+    margin-top: 0;
+    margin-bottom: 25px;
+}
+
+.contact-form .form-actions {
+    margin-top: 20px;
+    display: flex;
+    gap: 15px;
+}
+
+.contact-form .form-actions .btn-primary,
+.contact-form .form-actions .btn-secondary {
+    width: 100%;
+    padding: 12px;
+}
+
+.btn-secondary {
+    background-color: #6c757d;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1.1em;
+    transition: background-color 0.2s;
+}
+.btn-secondary:hover {
+    background-color: #5a6268;
+}
+
+/* --- NUEVO ESTILO PARA EL NOMBRE CLICKEABLE --- */
+.agenda-table .contact-name-link {
+    color: var(--primary-color);
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.agenda-table .contact-name-link:hover {
+    text-decoration: underline;
+}
+
+.agenda-table td a {
+    color: inherit; /* Hereda el color del texto de la celda (generalmente negro) */
+    text-decoration: none; /* Quita el subrayado por defecto */
+}
+
+.agenda-table td a:hover {
+    text-decoration: underline; /* Añade el subrayado solo al pasar el mouse */
+    color: var(--primary-color); /* (Opcional) Cambia el color a verde al pasar el mouse */
+}
+
+/* Aplica a los enlaces de teléfono y de página web en la vista de detalle */
+.contact-detail .profile-details a {
+    color: var(--primary-color); /* Los hace verdes para que destaquen */
+    font-weight: normal;
+}

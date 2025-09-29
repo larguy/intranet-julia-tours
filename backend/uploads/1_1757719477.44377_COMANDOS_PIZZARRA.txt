@@ -1,0 +1,17 @@
+1. Instalar PM2 globalmente:
+Abre una terminal (PowerShell o CMD) como Administrador y ejecuta:
+code
+Bash
+npm install pm2 -g
+2. Iniciar tu servidor con PM2:
+Navega con la terminal hasta la carpeta de tu proyecto (donde está server.js) y ejecuta:
+code
+Bash
+pm2 start server.js --name "sistema-turnos"
+pm2 start server.js: Inicia tu servidor.
+--name "sistema-turnos": Le da un nombre fácil de recordar a tu proceso.
+3. Generar el script de inicio de PM2:
+Ahora, dile a PM2 que genere un script para ejecutarse al arrancar Windows. Ejecuta:
+code
+Bash
+pm2 startup

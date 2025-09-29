@@ -1,0 +1,408 @@
+.App {
+  text-align: center;
+}
+
+.App-logo {
+  height: 40vmin;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .App-logo {
+    animation: App-logo-spin infinite 20s linear;
+  }
+}
+
+.App-header {
+  background-color: #282c34;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(10px + 2vmin);
+  color: white;
+}
+
+.App-link {
+  color: #61dafb;
+}
+
+@keyframes App-logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* src/App.css */
+:root {
+  --primary-color: #008f39;
+  --white-color: #ffffff;
+  --light-gray: #f4f4f4;
+  --dark-text: #333;
+}
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  background-color: var(--light-gray);
+}
+
+
+.navbar {
+  background-color: var(--primary-color);
+  padding: 1rem;
+}
+
+.logo {
+  height: 40px;
+}
+
+/* src/App.css */
+:root {
+  --primary-color: #008f39;
+  --white-color: #ffffff;
+  --light-gray: #f4f4f4;
+  --dark-text: #333;
+}
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  background-color: var(--light-gray);
+}
+
+.App {
+  text-align: center;
+}
+
+.app-header {
+  background-color: var(--primary-color);
+  padding: 10px 30px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  height: 65px;
+  position: relative;
+  z-index: 1000; /* Z-index alto para que el header esté por encima */
+  
+  /* --- CORRECCIÓN CLAVE --- */
+  /* Permite que los hijos posicionados (el submenú) se salgan de los límites del header */
+  overflow: visible; 
+}
+
+.logo {
+  height: 50px;
+}
+
+.nav-link, .nav-link-button {
+  color: var(--white-color);
+  text-decoration: none;
+  margin: 0 15px;
+  font-weight: bold;
+  padding: 8px 15px;
+  border-radius: 5px;
+  transition: background-color 0.3s;
+}
+
+.nav-link:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.nav-link-button {
+    background-color: transparent;
+    border: 1px solid var(--white-color);
+    cursor: pointer;
+    font-size: 1em;
+}
+
+.nav-link-button:hover {
+    background-color: var(--white-color);
+    color: var(--primary-color);
+}
+
+
+.container {
+  padding: 20px;
+}
+
+.form-container {
+  background-color: var(--white-color);
+  padding: 40px;
+  max-width: 400px;
+  margin: 40px auto;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.form-group {
+  margin-bottom: 20px;
+  text-align: left;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: bold;
+  color: var(--dark-text);
+}
+
+.form-group input {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.btn-primary {
+  padding: 12px;
+  background-color: var(--primary-color);
+  color: var(--white-color);
+  border: none;
+  border-radius: 4px;
+  font-size: 1.1em;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.btn-primary:hover {
+  background-color: #00732d;
+}
+
+.form-container p {
+    margin-top: 20px;
+}
+
+/* src/App.css */
+
+.error-message {
+  color: #D8000C; /* Rojo */
+  background-color: #FFD2D2; /* Fondo rojo claro */
+  border: 1px solid #D8000C;
+  padding: 10px;
+  border-radius: 5px;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+/* src/App.css */
+
+/* ... (tus otros estilos como .error-message, .form-container, etc.) ... */
+
+.password-rules {
+  list-style-type: circle; /* O 'disc' */
+  font-size: 0.85em;
+  color: #555; /* Un gris oscuro para que no sea tan prominente */
+  text-align: left;
+  padding-left: 25px; /* Indentación de la lista */
+  margin-top: 5px;
+  margin-bottom: 10px;
+  background-color: #f8f8f8; /* Fondo sutil */
+  border: 1px solid #eee;
+  padding-top: 10px;
+  padding-bottom: 10px;
+  border-radius: 4px;
+}
+
+/* src/App.css */
+/* ... (tus otros estilos) ... */
+.success-message {
+  color: #2F6F2F;
+  background-color: #DFF2BF;
+  border: 1px solid #2F6F2F;
+  padding: 10px;
+  border-radius: 5px;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.app-header {
+    background-color: var(--primary-color);
+    padding: 10px 30px;
+    display: flex;
+    justify-content: space-between; /* Separa los elementos a los extremos y centro */
+    align-items: center;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    height: 65px; /* Altura fija para el header */
+}
+
+.header-left, .header-right { flex: 1; }
+.header-right { display: flex; justify-content: flex-end; }
+.logo { height: 45px; display: block; }
+
+/* --- ESTILOS DEL MENÚ DE NAVEGACIÓN (MOVIDOS AQUÍ) --- */
+.intranet-main-nav { flex: 3; }
+.intranet-main-nav ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%; /* Ocupa toda la altura del header */
+}
+
+.intranet-main-nav ul li {
+  position: relative;
+  height: 100%; /* Ocupa toda la altura para un área de hover más grande */
+  display: flex;
+  align-items: center;
+}
+
+/* El botón ahora es submenu-trigger y se parece a los NavLink */
+.intranet-main-nav ul li a,
+.intranet-main-nav ul li .submenu-trigger {
+  display: flex;
+  align-items: center;
+  padding: 0 18px; /* Solo padding horizontal */
+  height: 100%;
+  text-decoration: none;
+  color: white;
+  font-weight: bold;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 0.9em;
+  transition: background-color 0.2s;
+}
+
+.intranet-main-nav ul li a:hover,
+.intranet-main-nav ul li .submenu-trigger:hover {
+  background-color: rgba(255, 255, 255, 0.15);
+}
+
+.intranet-main-nav ul li a.active {
+  background-color: rgba(255, 255, 255, 0.25);
+}
+
+.arrow-down { margin-left: 5px; font-size: 0.7em; }
+
+
+/* Estilos para los enlaces de Login/Registro en el header */
+.nav-links a.nav-link {
+    color: white;
+    text-decoration: none;
+    margin: 0 15px;
+    font-weight: bold;
+    padding: 8px 15px;
+}
+
+.submenu-container {
+  position: absolute;
+   /* Se posiciona justo debajo del <li> padre */
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+  z-index: 1001; /* Z-index más alto para estar sobre todo lo demás */
+  padding: 10px;
+  display: flow-root;
+  gap: 10px;
+  margin-top: 5px; /* Pequeño espacio para que no esté pegado */
+}
+
+
+.submenu-column {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.submenu-column li a {
+  display: block;
+  color: #333 !important;
+  font-weight: normal;
+  padding: 8px 15px !important;
+  text-decoration: none;
+  border-radius: 5px;
+  white-space: nowrap;
+  transition: background-color 0.2s;
+}
+
+.submenu-column li a:hover {
+  background-color: #f5f5f5;
+}
+
+.submenu-column li a.active {
+  background-color: #f0f0f0;
+  color: var(--primary-color) !important;
+  font-weight: bold;
+}
+
+/* --- 3. ESTILOS DEL MENÚ DE NAVEGACIÓN PRINCIPAL (ACTUALIZADO) --- */
+.intranet-main-nav { flex: 3; }
+.intranet-main-nav ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+}
+
+.intranet-main-nav ul li {
+  position: relative;
+  height: 100%;
+  display: flex;
+  align-items: center;
+}
+
+/* Estilo para TODOS los elementos del menú principal (enlaces y botones) */
+.intranet-main-nav ul li > a,
+.intranet-main-nav ul li > button.submenu-trigger {
+  display: flex;
+  align-items: center;
+  
+  /* --- CAMBIO 1: AUMENTAMOS EL PADDING PARA AGRANDAR LOS BOTONES --- */
+  padding: 8px 22px; /* Aumentamos el padding horizontal de 18px a 22px */
+  /* El padding vertical lo ajustamos a 8px para que no sea tan alto */
+  
+  height: auto; /* Dejamos que el padding defina la altura */
+  text-decoration: none;
+  color: white;
+  font-weight: bold;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1em; /* Aumentamos ligeramente el tamaño de la fuente */
+  transition: background-color 0.2s, color 0.2s;
+  
+  /* --- CAMBIO 2: BORDE REDONDEADO POR DEFECTO --- */
+  border-radius: 20px; /* Hacemos que los bordes sean redondeados */
+}
+
+.intranet-main-nav ul li > a:hover,
+.intranet-main-nav ul li > button.submenu-trigger:hover {
+  background-color: rgba(255, 255, 255, 0.2); /* Resaltado sutil al pasar el ratón */
+}
+
+/* El estado activo ahora se ve idéntico al hover para consistencia */
+.intranet-main-nav ul li > a.active {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+
+/* --- NUEVO ESTILO PARA EL LOGO EN EL LOGIN --- */
+.login-logo {
+    display: block; /* Para que margin auto funcione */
+    margin: 0 auto 30px auto; /* Centra horizontalmente y añade 30px de margen abajo */
+    width: auto; /* Mantiene la proporción */
+}
+
+
+.developer-credit {
+    margin-top: 40px; /* Añade un buen espacio arriba para separarlo */
+    font-size: 0.8em; /* Letra más pequeña */
+    color: #888; /* Un color gris para que sea sutil */
+    text-align: center; /* Asegura que esté centrado */
+}

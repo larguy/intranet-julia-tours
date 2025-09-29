@@ -1,0 +1,138 @@
+.calendar-wrapper {
+    background-color: white;
+    padding: 20px;
+    border-radius: 8px;
+    margin-top: 20px;
+}
+
+
+.overlay {
+position: fixed;
+top: 0;
+left: 0;
+right: 0;
+bottom: 0;
+background-color: rgba(0, 0, 0, 0.75);
+z-index: 1000;
+display: flex;
+align-items: center;
+justify-content: center;
+}
+.modal {
+background: white;
+padding: 30px;
+border-radius: 8px;
+max-width: 500px;
+width: 100%;
+max-height: 90vh;
+overflow-y: auto;
+position: relative;
+outline: none;
+}
+.modal h2 {
+margin-top: 0;
+}
+.checkbox-group {
+display: flex;
+align-items: center;
+}
+.checkbox-group input {
+width: auto;
+margin-right: 10px;
+}
+.modal-actions {
+margin-top: 20px;
+padding-top: 15px;
+border-top: 1px solid #eee;
+display: flex;
+justify-content: flex-end;
+gap: 10px;
+}
+.modal-actions button {
+width: auto;
+padding: 10px 20px;
+}
+
+.readonly-details p {
+    margin: 12px 0;
+    font-size: 1.1em;
+    color: #333;
+    line-height: 1.6;
+    border-bottom: 1px solid #f0f0f0;
+    padding-bottom: 12px;
+}
+
+.readonly-details p:last-child {
+    border-bottom: none;
+}
+
+.readonly-details p strong {
+    color: #555;
+    display: inline-block;
+    width: 120px;
+}
+
+.readonly-details a {
+    color: var(--primary-color);
+    font-weight: bold;
+}
+
+
+.form-row {
+    display: flex;
+    gap: 15px;
+}
+
+.form-row .form-group {
+    display: flex;
+    flex: 1; 
+    justify-content: center;
+}
+
+.time-picker {
+    display: flex;
+    align-items: center;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    padding: 2px;
+}
+.time-picker select {
+    border: none;
+    background: none;
+    font-size: 0.8rem;
+    padding: 2px 4px;
+    outline: none;
+}
+.time-picker span {
+    font-weight: bold;
+}
+
+.rbc-toolbar-label{
+    font-size: 1.3em;
+    text-transform:capitalize;
+    font-weight: bold;
+}
+
+
+.rbc-agenda-table .rbc-header:nth-child(1),
+.rbc-agenda-table .rbc-agenda-date-cell {
+    width: 10%; 
+    min-width: 120px;
+}
+
+.rbc-agenda-table .rbc-header:nth-child(2),
+.rbc-agenda-table .rbc-agenda-time-cell {
+    width: 20%; 
+    min-width: 140px;
+}
+
+.rbc-agenda-date-cell,
+.rbc-agenda-time-cell {
+    text-align: center;
+}
+
+.rbc-agenda-table .rbc-header:nth-child(3),
+.rbc-agenda-table .rbc-agenda-event-cell {
+    width: 60%; 
+}
+

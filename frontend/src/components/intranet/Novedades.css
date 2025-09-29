@@ -1,0 +1,343 @@
+.post-form {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 30px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.post-form .quill {
+    background-color: white;
+    margin-bottom: 10px;
+}
+
+.posts-container {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.post-card.novelty-card {
+    background-color: #fff;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    position: relative;
+}
+
+.novelty-card .delete-post-btn {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    background: #f1f1f1;
+    border: none;
+    border-radius: 50%;
+    width: 28px;
+    height: 28px;
+    font-size: 1.4em;
+    line-height: 28px;
+    padding: 0;
+    font-weight: bold;
+    color: #888;
+    cursor: pointer;
+    transition: all 0.2s;
+    opacity: 0;
+}
+
+.novelty-card:hover .delete-post-btn {
+    opacity: 1;
+}
+
+.novelty-card .delete-post-btn:hover {
+    background-color: #dc3545;
+    color: white;
+}
+
+.novelty-header {
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #eee;
+    text-align: right; 
+}
+
+.novelty-date {
+    font-size: 0.9em;
+    font-weight: bold;
+    color: #6c757d;
+}
+
+.novelty-card .post-content .ql-editor {
+    padding: 0;
+    min-height: 0;
+    font-size: 1em;
+    line-height: 1.6;
+    text-align: center; 
+}
+
+.novelty-card .post-content .ql-editor img {
+    max-width: 100%; 
+    height: auto;
+    border-radius: 8px;
+    margin: 15px auto; 
+    display: block; 
+}
+
+.novelty-card .post-content .ql-editor a {
+    display: inline-block;
+    padding: 8px 12px;
+    background-color: #e9ecef;
+    border-radius: 5px;
+    text-decoration: none;
+    font-weight: bold;
+    color: #343a40;
+    border: 1px solid #dee2e6;
+    margin: 5px;
+}
+
+.novelty-card .post-content .ql-editor a:hover {
+    background-color: #dee2e6;
+    border-color: #ced4da;
+}
+
+.pagination-controls {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+    margin: 30px 0; 
+}
+
+.pagination-controls button {
+    background-color: white;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 8px 15px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.pagination-controls button:hover:not(:disabled) {
+    background-color: #f0f0f0;
+}
+
+.pagination-controls button:disabled {
+    color: #aaa;
+    cursor: not-allowed;
+    background-color: #f9f9f9;
+}
+
+.pagination-controls span {
+    font-weight: bold;
+    color: #555;
+}
+
+
+.novelty-header {
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #eee;
+}
+
+.novelty-asunto {
+    margin: 0;
+    font-size: 1.2em;
+    color: #000000;
+    text-align: left; 
+}
+
+.novelty-date {
+    font-size: 0.9em;
+    font-weight: bold;
+    color: #6c757d;
+    white-space: nowrap; 
+    margin-left: 15px; 
+}
+
+
+.attachments-section {
+    margin-top: 15px;
+    padding: 15px;
+    border: 2px dashed #ccc;
+    border-radius: 8px;
+    background-color: #f9f9f9;
+    transition: border-color 0.2s;
+}
+
+.attachments-section:hover {
+    border-color: var(--primary-color);
+}
+
+.attachment-label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.attachment-input {
+    display: block;
+    width: 100%;
+}
+
+.attachment-list {
+    margin-top: 15px;
+}
+
+.attachment-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #e9ecef;
+    padding: 8px 12px;
+    border-radius: 5px;
+    margin-bottom: 5px;
+    font-size: 0.9em;
+}
+
+.attachment-item span {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-right: 10px;
+}
+
+.attachment-item button {
+    background: none;
+    border: none;
+    font-size: 1.2em;
+    font-weight: bold;
+    color: #6c757d;
+    cursor: pointer;
+    padding: 0 5px;
+}
+
+.attachment-item button:hover {
+    color: #dc3545;
+}
+
+.attachment-item {
+    display: flex;
+    justify-content: flex-start; 
+    align-items: center;
+    gap: 10px; 
+    background-color: #9b9fa3;
+    padding: 8px 12px;
+    border-radius: 5px;
+    margin-bottom: 5px;
+    font-size: 0.9em;
+    border-left: 5px solid #6c757d; 
+}
+
+.attachment-item span {
+    flex-grow: 1; 
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.attachment-item button {
+    margin-left: auto; 
+}
+
+.attachment-item svg {
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0; 
+}
+
+.attachment-item.file-pdf { border-left-color: #dc3545; } /* Rojo para PDF */
+.attachment-item.file-pdf svg { stroke: #dc3545; }
+
+.attachment-item.file-word { border-left-color: #0d6efd; } /* Azul para Word */
+.attachment-item.file-word svg { stroke: #0d6efd; }
+
+.attachment-item.file-excel { border-left-color: #198754; } /* Verde para Excel */
+.attachment-item.file-excel svg { stroke: #198754; }
+
+
+.post-content .attachment-display-list {
+    list-style: none;
+    padding: 0;
+    margin-top: 15px;
+    text-align: left; 
+}
+
+.post-content .attachment-display-list li {
+    margin-bottom: 8px;
+}
+
+.post-content .attachment-display-list a {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 15px;
+    background-color: #f1f3f5;
+    border-radius: 20px;
+    text-decoration: none;
+    font-weight: 500;
+    color: #495057;
+    border: 1px solid #dee2e6;
+    transition: background-color 0.2s, box-shadow 0.2s;
+}
+
+.post-content .attachment-display-list a:hover {
+    background-color: #e9ecef;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.post-content .attachment-display-list li a::before {
+    content: '';
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    background-size: contain;
+    background-repeat: no-repeat;
+}
+
+.post-content .attachment-display-list li.file-pdf a::before {
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="%23dc3545" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2v4a2 2 0 0 0 2 2h4"></path><path d="M9 15a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v3.5"></path><path d="M9 12h3"></path><path d="M14.5 22l-1.5-1.5"></path><path d="M20 16h-4.5a2 2 0 0 0 0 4h4.5v-4Z"></path></svg>');
+}
+.post-content .attachment-display-list li.file-word a::before {
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="%230d6efd" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"></path><polyline points="14 2 14 8 20 8"></polyline><path d="M12 18v-6"></path><path d="m9 15 3-3 3 3"></path></svg>');
+}
+
+.attachment-item.file-excel { border-left-color: #198754; } 
+.attachment-item.file-excel svg { stroke: #198754; }
+.post-content .attachment-display-list li.file-excel a::before {
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="%23198754" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"></path><polyline points="14 2 14 8 20 8"></polyline><path d="M12 18v-6"></path><path d="m15 15-3-3-3 3"></path></svg>');
+}
+
+.attachment-item.file-txt { border-left-color: #495057; }
+.attachment-item.file-txt svg { stroke: #495057; }
+.post-content .attachment-display-list li.file-txt a::before {
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="%23495057" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>');
+}
+
+
+.post-content.ck-content {
+    line-height: 1.6;
+}
+
+.post-content.ck-content figure {
+    margin: 1em auto; 
+    text-align: center;
+}
+
+.post-content.ck-content img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+}
+
+.template-select {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background-color: #fff;
+    font-size: 0.95rem;
+    margin-top: 5px;
+}
