@@ -1,5 +1,23 @@
-# Ignore node_modules folder
-node_modules/
+# Contenido final y limpio, combinando lo mejor de ambos mundos
 
-# Ignore Python virtual environment folder
+# Python
+__pycache__/
+*.pyc
 venv/
+instance/
+
+# React
+node_modules/
+build/
+.env
+.env.local
+
+# Archivos de sistema
+.DS_Store
+
+# Carpeta de archivos subidos
+backend/uploads/
+
+# Otras reglas que vinieron de GitHub que quieras conservar
+dist/
+*.egg-info/
