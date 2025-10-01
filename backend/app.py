@@ -260,7 +260,7 @@ def get_internos(current_user):
 @permission_required('SUPERUSER')
 def get_all_users(current_user):
     users = User.query.all()
-    user_list = [{'id': user.id, 'username': user.username, 'role': user.role.name, 'guardia_nro': user.guardia_nro} for user in users]
+    user_list = [{'id': user.id, 'username': user.username, 'role': user.role.name, 'guardia_nro': user.guardia_nro, 'sector': user.sector} for user in users]
     return jsonify(user_list)
 
 @app.route('/admin/users/<int:user_id>/role', methods=['POST'])
@@ -512,6 +512,72 @@ def delete_guardia_fecha(current_user, id):
     db.session.delete(guardia_fecha)
     db.session.commit()
     return jsonify({'message': 'Fecha de guardia eliminada'})
+
+@app.route('/admin/users/<int:user_id>/interno', methods=['POST'])
+@permission_required('SUPERUSER')
+def set_user_interno(current_user, user_id):
+    user_to_modify = db.session.get(User, user_id)
+    if not user_to_modify:
+        return jsonify({'message': 'Usuario no encontrado'}), 404
+    
+    # Un Superusuario no puede modificar su propio interno desde aquí para evitar auto-bloqueos
+    if user_to_modify.id == current_user.id:
+        return jsonify({'message': 'No puedes modificar tu propio interno desde este panel.'}), 403
+
+    data = request.get_json()
+    new_interno = data.get('interno')
+
+    # Hacemos una validación simple (puedes hacerla más compleja si es necesario)
+    if new_interno and isinstance(new_interno, str) and len(new_interno) < 20:
+        user_to_modify.interno = new_interno
+        db.session.commit()
+        return jsonify({'message': f'Interno de {user_to_modify.username} actualizado.'})
+    else:
+        return jsonify({'message': 'El interno proporcionado es inválido.'}), 400
+
+# --- NUEVO ENDPOINT PARA ELIMINAR UN USUARIO ---
+@app.route('/admin/users/<int:user_id>', methods=['DELETE'])
+@permission_required('SUPERUSER')
+def delete_user(current_user, user_id):
+    user_to_delete = db.session.get(User, user_id)
+    if not user_to_delete:
+        return jsonify({'message': 'Usuario no encontrado'}), 404
+
+    # Medida de seguridad: Un Superusuario no puede eliminarse a sí mismo
+    if user_to_delete.id == current_user.id:
+        return jsonify({'message': 'No puedes eliminar tu propia cuenta de superusuario.'}), 403
+
+    try:
+        db.session.delete(user_to_delete)
+        db.session.commit()
+        return jsonify({'message': f'Usuario {user_to_delete.username} ha sido eliminado.'}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'message': f'Error al eliminar el usuario: {str(e)}'}), 500
+
+# --- NUEVO ENDPOINT PARA CAMBIAR EL SECTOR DE UN USUARIO ---
+@app.route('/admin/users/<int:user_id>/sector', methods=['POST'])
+@permission_required('SUPERUSER')
+def set_user_sector(current_user, user_id):
+    user_to_modify = db.session.get(User, user_id)
+    if not user_to_modify:
+        return jsonify({'message': 'Usuario no encontrado'}), 404
+    
+    # Un Superusuario no debería cambiar su propio sector desde aquí
+    if user_to_modify.id == current_user.id:
+        return jsonify({'message': 'No puedes modificar tu propio sector desde este panel.'}), 403
+
+    data = request.get_json()
+    new_sector = data.get('sector')
+
+    # Hacemos una validación simple. Puedes hacerla más compleja
+    # si tienes una lista fija de sectores en el backend.
+    if new_sector and isinstance(new_sector, str) and len(new_sector) < 100:
+        user_to_modify.sector = new_sector
+        db.session.commit()
+        return jsonify({'message': f'Sector de {user_to_modify.username} actualizado.'})
+    else:
+        return jsonify({'message': 'El sector proporcionado es inválido.'}), 400
 
 if __name__ == '__main__':
     with app.app_context():

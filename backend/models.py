@@ -212,3 +212,58 @@ class GuardiaFecha(db.Model):
             'fecha': self.fecha.isoformat(),
             'guardia_nro': self.guardia_nro
         } 
+    
+
+class Evento(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    titulo = db.Column(db.String(200), nullable=False)
+    banner_image = db.Column(db.String(100), nullable=True)
+    ubicacion_texto = db.Column(db.String(300), nullable=True)
+    ubicacion_mapa = db.Column(db.String(500), nullable=True) # Para el enlace de Google Maps
+    fecha_hora = db.Column(db.DateTime(timezone=True), nullable=False)
+    detalle = db.Column(db.Text, nullable=True)
+    
+    # Guardaremos la estructura del formulario dinámico como JSON
+    # Ejemplo: [{'id': 'q1', 'type': 'checkbox', 'label': '¿Traes acompañante?'}, ...]
+    form_dinamico = db.Column(db.JSON, nullable=True)
+
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    creador = db.relationship('User')
+    inscripciones = db.relationship('Inscripcion', backref='evento', lazy='dynamic', cascade="all, delete-orphan")
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'titulo': self.titulo,
+            'banner_image': self.banner_image,
+            'ubicacion_texto': self.ubicacion_texto,
+            'ubicacion_mapa': self.ubicacion_mapa,
+            'fecha_hora': self.fecha_hora.isoformat(),
+            'detalle': self.detalle,
+            'form_dinamico': self.form_dinamico,
+            'creador': { 'nombre': self.creador.nombre, 'apellido': self.creador.apellido } if self.creador else None
+        }
+
+class Inscripcion(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    evento_id = db.Column(db.Integer, db.ForeignKey('evento.id'), nullable=False)
+    participa = db.Column(db.Boolean, nullable=False, default=False)
+    detalles_usuario = db.Column(db.Text, nullable=True)
+
+    # Guardaremos las respuestas al formulario dinámico como JSON
+    # Ejemplo: {'q1': True, 'q2': 'Opción A'}
+    respuestas_dinamicas = db.Column(db.JSON, nullable=True)
+
+    usuario = db.relationship('User')
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'user_id': self.user_id,
+            'evento_id': self.evento_id,
+            'participa': self.participa,
+            'detalles_usuario': self.detalles_usuario,
+            'respuestas_dinamicas': self.respuestas_dinamicas,
+            'usuario': { 'nombre': self.usuario.nombre, 'apellido': self.usuario.apellido } if self.usuario else None
+        }
