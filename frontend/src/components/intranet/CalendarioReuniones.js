@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import axios from 'axios';
+import apiClient from '../../api';
 import { useAuth } from '../../context/AuthContext';
 import { Calendar, dateFnsLocalizer } from 'react-big-calendar';
 import format from 'date-fns/format';
@@ -118,7 +118,7 @@ const CalendarioReuniones = () => {
     const fetchEvents = useCallback(async () => {
         if (!token) return;
         try {
-            const response = await axios.get(`${process.env.REACT_APP_API_URL}/reuniones/all`, {
+            const response = await apiClient.get(`${process.env.REACT_APP_API_URL}/reuniones/all`, {
                 headers: { 'x-access-token': token }
             });
             const formattedEvents = response.data.map(event => ({
@@ -199,7 +199,7 @@ const CalendarioReuniones = () => {
      const handleDelete = async () => {
         if (selectedEvent && window.confirm('¿Estás seguro?')) {
             try {
-                await axios.delete(`${process.env.REACT_APP_API_URL}/reuniones/${selectedEvent.id}`, { headers: { 'x-access-token': token } });
+                await apiClient.delete(`${process.env.REACT_APP_API_URL}/reuniones/${selectedEvent.id}`, { headers: { 'x-access-token': token } });
                 fetchEvents();
                 closeModal();
             } catch (error) {
@@ -222,7 +222,7 @@ const CalendarioReuniones = () => {
             ? `${process.env.REACT_APP_API_URL}/reuniones/${selectedEvent.id}`
             : `${process.env.REACT_APP_API_URL}/reuniones`;
         try {
-            await axios[method](url, submissionData, { headers: { 'x-access-token': token } });
+            await apiClient[method](url, submissionData, { headers: { 'x-access-token': token } });
             fetchEvents();
             closeModal();
         } catch (error) {

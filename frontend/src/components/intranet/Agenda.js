@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import axios from 'axios';
+import apiClient from '../../api';
 import { useAuth } from '../../context/AuthContext';
 import './Agenda.css';
 
@@ -141,7 +141,7 @@ const Agenda = () => {
     const fetchContacts = useCallback(async () => {
         setIsLoading(true);
         try {
-            const response = await axios.get(`${process.env.REACT_APP_API_URL}/agenda`, {
+            const response = await apiClient.get(`${process.env.REACT_APP_API_URL}/agenda`, {
                 headers: { 'x-access-token': token }
             });
             setContacts(response.data);
@@ -175,7 +175,7 @@ const Agenda = () => {
         const method = selectedContact ? 'put' : 'post';
 
         try {
-            await axios[method](url, contactData, { headers: { 'x-access-token': token } });
+            await apiClient[method](url, contactData, { headers: { 'x-access-token': token } });
             fetchContacts(); // Recarga la lista de contactos
             setView('list'); // Vuelve a la vista de lista
             setSelectedContact(null); // Limpia la selección
@@ -187,7 +187,7 @@ const Agenda = () => {
     const handleDeleteContact = async (contactId) => {
         if (window.confirm('¿Estás seguro de que quieres eliminar este contacto?')) {
             try {
-                await axios.delete(`${process.env.REACT_APP_API_URL}/agenda/${contactId}`, { headers: { 'x-access-token': token } });
+                await apiClient.delete(`${process.env.REACT_APP_API_URL}/agenda/${contactId}`, { headers: { 'x-access-token': token } });
                 fetchContacts();
                 setView('list'); // Asegúrate de volver a la lista si estabas en detalle
             } catch (err) {

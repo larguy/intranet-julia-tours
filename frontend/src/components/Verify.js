@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import apiClient from '../api';
 
 const Verify = () => {
     const [code, setCode] = useState('');
@@ -21,7 +21,7 @@ const Verify = () => {
         setSuccess('');
 
         try {
-            const response = await axios.post(`${process.env.REACT_APP_API_URL}/verify`, {
+            const response = await apiClient.post(`${process.env.REACT_APP_API_URL}/verify`, {
                 username,
                 code
             });

@@ -1,13 +1,13 @@
 // src/components/intranet/admin/AdminPanel.js
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import axios from 'axios';
+import apiClient from '../../../api'; // <-- RUTA DE IMPORTACIÓN CORREGIDA
 import { useAuth } from '../../../context/AuthContext';
 import './AdminPanel.css';
 
 // --- Componente para la Administración de Fechas de Guardia ---
 const GuardiasManager = ({ token }) => {
-    // ... (El código de GuardiasManager se mantiene exactamente igual, no necesita cambios)
+    // (El código de GuardiasManager se mantiene exactamente igual)
     const [fechas, setFechas] = useState([]);
     const [selectedDate, setSelectedDate] = useState('');
     const [selectedGuardia, setSelectedGuardia] = useState('1');
@@ -20,7 +20,7 @@ const GuardiasManager = ({ token }) => {
         setError('');
         try {
             const config = { headers: { 'x-access-token': token } };
-            const response = await axios.get(`${process.env.REACT_APP_API_URL}/guardias/fechas`, config);
+            const response = await apiClient.get('/guardias/fechas', config);
             setFechas(response.data);
         } catch (err) {
             setError('No se pudieron cargar las fechas de guardia.');
@@ -45,7 +45,7 @@ const GuardiasManager = ({ token }) => {
         }
         try {
             const config = { headers: { 'x-access-token': token } };
-            await axios.post(`${process.env.REACT_APP_API_URL}/guardias/fechas`, {
+            await apiClient.post('/guardias/fechas', {
                 fecha: selectedDate,
                 guardia_nro: selectedGuardia
             }, config);
@@ -64,7 +64,7 @@ const GuardiasManager = ({ token }) => {
             setSuccess('');
             try {
                 const config = { headers: { 'x-access-token': token } };
-                await axios.delete(`${process.env.REACT_APP_API_URL}/guardias/fechas/${id}`, config);
+                await apiClient.delete(`/guardias/fechas/${id}`, config);
                 setSuccess('Fecha eliminada correctamente.');
                 fetchFechas();
             } catch (err) {
@@ -90,7 +90,7 @@ const GuardiasManager = ({ token }) => {
 
     return (
         <div className="guardias-admin-container">
-            <h2>Administrador de fechas de Guardias y Feriados</h2>
+            <h2>Administrar Fechas de Guardia</h2>
             <form onSubmit={handleAddDate} className="guardia-form">
                 <label>Asignar fecha al:</label>
                 <select value={selectedGuardia} onChange={e => setSelectedGuardia(e.target.value)}>
@@ -141,8 +141,6 @@ const AdminPanel = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState('');
-    
-    // --- ESTADO CORREGIDO: Volvemos a añadir message y setMessage ---
     const [message, setMessage] = useState('');
 
     const { isSuperUser, isGuardiaAdmin } = useMemo(() => ({
@@ -157,7 +155,7 @@ const AdminPanel = () => {
         }
         setIsLoading(true);
         try {
-            const response = await axios.get(`${process.env.REACT_APP_API_URL}/admin/users`, {
+            const response = await apiClient.get('/admin/users', {
                 headers: { 'x-access-token': token }
             });
             setAllUsers(response.data);
@@ -183,8 +181,8 @@ const AdminPanel = () => {
         setMessage('');
         setError('');
         try {
-            const response = await axios.post(
-                `${process.env.REACT_APP_API_URL}/admin/users/${userId}/role`,
+            const response = await apiClient.post(
+                `/admin/users/${userId}/role`,
                 { role: newRole },
                 { headers: { 'x-access-token': token } }
             );
@@ -200,7 +198,7 @@ const AdminPanel = () => {
         setError('');
         const valueToSend = newGuardiaNro ? parseInt(newGuardiaNro, 10) : null;
         try {
-            await axios.post(`${process.env.REACT_APP_API_URL}/admin/users/${userId}/guardia`, 
+            await apiClient.post(`/admin/users/${userId}/guardia`, 
                 { guardia_nro: valueToSend },
                 { headers: { 'x-access-token': token } }
             );
@@ -214,39 +212,34 @@ const AdminPanel = () => {
     };
 
     const handleSectorChange = async (userId, newSector) => {
-    setMessage('');
-    setError('');
-    try {
-        await axios.post(`${process.env.REACT_APP_API_URL}/admin/users/${userId}/sector`, 
-            { sector: newSector },
-            { headers: { 'x-access-token': token } }
-        );
-        
-        // Actualizar el estado local para ver el cambio al instante
-        setAllUsers(prevUsers => prevUsers.map(u => 
-            u.id === userId ? { ...u, sector: newSector } : u
-        ));
-        setMessage('Sector actualizado correctamente.');
-
+        setMessage('');
+        setError('');
+        try {
+            await apiClient.post(`/admin/users/${userId}/sector`, 
+                { sector: newSector },
+                { headers: { 'x-access-token': token } }
+            );
+            setAllUsers(prevUsers => prevUsers.map(u => 
+                u.id === userId ? { ...u, sector: newSector } : u
+            ));
+            setMessage('Sector actualizado correctamente.');
         } catch (error) {
             setError(error.response?.data?.message || "Error al actualizar el sector.");
-     }
+        }
     };
 
     const handleSucursalChange = async (userId, newSucursal) => {
         setMessage('');
         setError('');
         try {
-            await axios.post(`${process.env.REACT_APP_API_URL}/admin/users/${userId}/sucursal`, 
+            await apiClient.post(`/admin/users/${userId}/sucursal`, 
                 { sucursal: newSucursal },
                 { headers: { 'x-access-token': token } }
             );
-            
             setAllUsers(prevUsers => prevUsers.map(u => 
                 u.id === userId ? { ...u, sucursal: newSucursal } : u
             ));
             setMessage('Sucursal actualizada correctamente.');
-
         } catch (error) {
             setError(error.response?.data?.message || "Error al actualizar la sucursal.");
         }
@@ -259,7 +252,7 @@ const AdminPanel = () => {
         setMessage('');
         setError('');
         try {
-            await axios.post(`${process.env.REACT_APP_API_URL}/admin/users/${userId}/interno`, 
+            await apiClient.post(`/admin/users/${userId}/interno`, 
                 { interno: newInterno.trim() },
                 { headers: { 'x-access-token': token } }
             );
@@ -277,7 +270,7 @@ const AdminPanel = () => {
             setMessage('');
             setError('');
             try {
-                await axios.delete(`${process.env.REACT_APP_API_URL}/admin/users/${userId}`, {
+                await apiClient.delete(`/admin/users/${userId}`, {
                     headers: { 'x-access-token': token }
                 });
                 setAllUsers(prevUsers => prevUsers.filter(u => u.id !== userId));
@@ -298,13 +291,12 @@ const AdminPanel = () => {
         <div className="admin-panel-container">
             <h1>Panel de Administración</h1>
             
-            {/* --- JSX CORREGIDO: Volvemos a añadir el mensaje de éxito --- */}
             {error && <p className="error-message">{error}</p>}
             {message && <p className="success-message">{message}</p>}
             
             {isSuperUser && (
                 <div className="admin-section">
-                    
+                    <h2>Administración de Usuarios</h2>
                     <div className="search-bar">
                         <input type="text" placeholder="Buscar por correo..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
                     </div>
@@ -316,7 +308,7 @@ const AdminPanel = () => {
                                     <th>Rol</th>
                                     <th>Guardia</th>
                                     <th>Sector</th>
-                                    <th>Sucursal</th> 
+                                    <th>Sucursal</th>
                                     <th>Acciones</th>
                                 </tr>
                             </thead>
@@ -326,8 +318,8 @@ const AdminPanel = () => {
                                         <td>{u.username}</td>
                                         <td>{u.id === user.id ? <strong>{u.role} (Actual)</strong> : <select value={u.role} onChange={(e) => handleRoleChange(u.id, e.target.value)} className="admin-select"><option value="VIEWER">Solo Lectura</option><option value="EDITOR">Editor</option><option value="SUPERUSER">Superusuario</option></select>}</td>
                                         <td><select value={u.guardia_nro || ''} onChange={(e) => handleGuardiaChange(u.id, e.target.value)} className="admin-select"><option value="">Sin Asignar</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option></select></td>
-                                        <td>{u.id === user.id ? (<strong>{u.sector}</strong>) : (<select value={u.sector || ''} onChange={(e) => handleSectorChange(u.id, e.target.value)} className="admin-select"> <option value="">Seleccionar...</option>{sectores.map(s => <option key={s} value={s}>{s}</option>)}</select>)}</td>
-                                        <td>{u.id === user.id ? (<strong>{u.sucursal}</strong>) : (<select value={u.sucursal || ''} onChange={(e) => handleSucursalChange(u.id, e.target.value)} className="admin-select"><option value="">Seleccionar...</option>{sucursales.map(s => <option key={s} value={s}>{s}</option>)}</select>)}</td>
+                                        <td>{u.id === user.id ? <strong>{u.sector}</strong> : <select value={u.sector || ''} onChange={(e) => handleSectorChange(u.id, e.target.value)} className="admin-select"><option value="">Seleccionar...</option>{sectores.map(s => <option key={s} value={s}>{s}</option>)}</select>}</td>
+                                        <td>{u.id === user.id ? <strong>{u.sucursal}</strong> : <select value={u.sucursal || ''} onChange={(e) => handleSucursalChange(u.id, e.target.value)} className="admin-select"><option value="">Seleccionar...</option>{sucursales.map(s => <option key={s} value={s}>{s}</option>)}</select>}</td>
                                         <td>{u.id !== user.id && (<div className="admin-actions"><button onClick={() => handleInternoChange(u.id)} className="action-button">Cambiar Interno</button><button onClick={() => handleDeleteUser(u.id, u.username)} className="action-button delete">Eliminar</button></div>)}</td>
                                     </tr>
                                 ))}

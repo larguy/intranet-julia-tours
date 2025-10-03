@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import apiClient from '../api';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import './Profile.css';
@@ -35,7 +35,7 @@ const Profile = () => {
         const fetchProfile = async () => {
             if (token) {
                 try {
-                    const response = await axios.get(`${process.env.REACT_APP_API_URL}/profile`, {
+                    const response = await apiClient.get(`${process.env.REACT_APP_API_URL}/profile`, {
                         headers: { 'x-access-token': token }
                     });
                     setProfileData(prevData => ({ ...prevData, ...response.data }));
@@ -67,16 +67,16 @@ const Profile = () => {
         formData.append('profile_pic', selectedFile);
 
         try {
-            await axios.post(`${process.env.REACT_APP_API_URL}/profile/upload-image`, formData, {
+            await apiClient.post(`${process.env.REACT_APP_API_URL}/profile/upload-image`, formData, {
                 headers: { 'Content-Type': 'multipart/form-data', 'x-access-token': token }
             });
             
-            const tokenResponse = await axios.post(`${process.env.REACT_APP_API_URL}/login/refresh-token`, {}, {
+            const tokenResponse = await apiClient.post(`${process.env.REACT_APP_API_URL}/login/refresh-token`, {}, {
                 headers: { 'x-access-token': token }
             });
             login(tokenResponse.data.token);
 
-            const profileResponse = await axios.get(`${process.env.REACT_APP_API_URL}/profile`, {
+            const profileResponse = await apiClient.get(`${process.env.REACT_APP_API_URL}/profile`, {
                 headers: { 'x-access-token': token }
             });
             setProfileData(prevData => ({ ...prevData, ...profileResponse.data }));
@@ -112,12 +112,12 @@ const Profile = () => {
         }
 
         try {
-            await axios.post(`${process.env.REACT_APP_API_URL}/profile`, profileData, {
+            await apiClient.post(`${process.env.REACT_APP_API_URL}/profile`, profileData, {
                 headers: { 'x-access-token': token }
             });
 
             if (user?.profile_incomplete) {
-                const response = await axios.post(`${process.env.REACT_APP_API_URL}/login/refresh-token`, {}, {
+                const response = await apiClient.post(`${process.env.REACT_APP_API_URL}/login/refresh-token`, {}, {
                     headers: { 'x-access-token': token }
                 });
                 login(response.data.token);
@@ -208,7 +208,15 @@ const Profile = () => {
                         </div>
                         <div className="form-group">
                             <label>Sucursal:</label>
-                            <select name="sucursal" value={profileData.sucursal || ''} onChange={handleChange} required disabled>
+                            <select 
+                                name="sucursal" 
+                                value={profileData.sucursal || ''} 
+                                onChange={handleChange} 
+                                required
+                                // --- LÓGICA CORREGIDA AQUÍ ---
+                                // El campo se deshabilita SI el perfil NO está incompleto.
+                                disabled={!user?.profile_incomplete}
+                            >
                                 <option value="">Selecciona una sucursal...</option>
                                 {sucursales.map(s => <option key={s} value={s}>{s}</option>)}
                             </select>

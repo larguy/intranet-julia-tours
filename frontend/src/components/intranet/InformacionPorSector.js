@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom'; 
-import axios from 'axios';
+import apiClient from '../../api';
 import { useAuth } from '../../context/AuthContext';
 import Editor from '../Editor';
 import DOMPurify from 'dompurify';
@@ -68,7 +68,7 @@ const InformacionPorSector = () => {
     const fetchPosts = useCallback(async () => {
         setIsLoading(true);
         try {
-            const response = await axios.get(`${process.env.REACT_APP_API_URL}/informacion/${sectorName}/all`, {
+            const response = await apiClient.get(`${process.env.REACT_APP_API_URL}/informacion/${sectorName}/all`, {
                 headers: { 'x-access-token': token }
             });
             setAllPosts(response.data);
@@ -110,7 +110,7 @@ const InformacionPorSector = () => {
         const formData = new FormData();
         formData.append('upload', file);
         try {
-            const response = await axios.post(`${process.env.REACT_APP_API_URL}/upload-file`, formData, {
+            const response = await apiClient.post(`${process.env.REACT_APP_API_URL}/upload-file`, formData, {
                 headers: { 'x-access-token': token }
             });
             setAttachments(prev => [...prev, { name: file.name, url: response.data.url }]);
@@ -132,7 +132,7 @@ const InformacionPorSector = () => {
         }
         
         try {
-            await axios.post(`${process.env.REACT_APP_API_URL}/informacion`, 
+            await apiClient.post(`${process.env.REACT_APP_API_URL}/informacion`, 
                 { 
                     sector: sectorName, 
                     title: newPostTitle, 
@@ -160,7 +160,7 @@ const InformacionPorSector = () => {
     const handleDeletePost = async (postId) => {
         if (window.confirm('¿Estás seguro?')) {
             try {
-                await axios.delete(`${process.env.REACT_APP_API_URL}/informacion/post/${postId}`, {
+                await apiClient.delete(`${process.env.REACT_APP_API_URL}/informacion/post/${postId}`, {
                     headers: { 'x-access-token': token }
                 });
                 fetchPosts();

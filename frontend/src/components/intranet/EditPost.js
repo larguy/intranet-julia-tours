@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import apiClient from '../../api';
 import { useAuth } from '../../context/AuthContext';
 import Editor from '../Editor';
 import './InformacionPorSector.css'; 
@@ -42,7 +42,7 @@ const EditPost = () => {
         const fetchPost = async () => {
             if (token) {
                 try {
-                    const response = await axios.get(`${process.env.REACT_APP_API_URL}/informacion/post/${postId}`, {
+                    const response = await apiClient.get(`${process.env.REACT_APP_API_URL}/informacion/post/${postId}`, {
                         headers: { 'x-access-token': token }
                     });
                     const post = response.data;
@@ -70,7 +70,7 @@ const EditPost = () => {
         const formData = new FormData();
         formData.append('upload', file);
         try {
-            const response = await axios.post(`${process.env.REACT_APP_API_URL}/upload-file`, formData, {
+            const response = await apiClient.post(`${process.env.REACT_APP_API_URL}/upload-file`, formData, {
                 headers: { 'x-access-token': token }
             });
             setAttachments(prev => [...prev, response.data]);
@@ -89,7 +89,7 @@ const EditPost = () => {
         setIsLoading(true);
 
         try {
-            await axios.put(
+            await apiClient.put(
                 `${process.env.REACT_APP_API_URL}/informacion/post/${postId}`,
                 {
                     title: title,

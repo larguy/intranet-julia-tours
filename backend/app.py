@@ -16,7 +16,6 @@ from werkzeug.utils import secure_filename
 from dateutil.parser import parse as parse_date
 
 from config import Config
-# --- LÍNEA CORREGIDA ---
 from models import db, User, UserRole, Post, Novedad, AgendaContact, Attachment, Reunion, GuardiaFecha, Evento, Inscripcion
 
 app = Flask(__name__)
@@ -326,14 +325,12 @@ def set_user_sucursal(current_user, user_id):
     if not user_to_modify:
         return jsonify({'message': 'Usuario no encontrado'}), 404
 
-    # Un Superusuario no puede modificar su propia sucursal desde aquí
     if user_to_modify.id == current_user.id:
         return jsonify({'message': 'No puedes modificar tu propia sucursal desde este panel.'}), 403
 
     data = request.get_json()
     new_sucursal = data.get('sucursal')
 
-    # Puedes añadir una validación contra una lista fija de sucursales si quieres
     if new_sucursal and isinstance(new_sucursal, str):
         user_to_modify.sucursal = new_sucursal
         db.session.commit()
@@ -355,7 +352,6 @@ def delete_user(current_user, user_id):
         db.session.rollback()
         return jsonify({'message': f'Error al eliminar el usuario: {str(e)}'}), 500
 
-# --- SECCIÓN DE INFORMACIÓN POR SECTOR ---
 @app.route('/informacion/<string:sector_name>/all', methods=['GET'])
 @token_required
 def get_all_posts_by_sector(current_user, sector_name):
@@ -409,7 +405,6 @@ def handle_single_post(current_user, post_id):
         db.session.commit()
         return jsonify({'message': 'Publicación eliminada correctamente'}), 200
 
-# --- SECCIÓN DE NOVEDADES ---
 @app.route('/novedades', methods=['GET', 'POST'])
 @token_required
 def handle_novedades(current_user):
@@ -572,7 +567,6 @@ def delete_guardia_fecha(current_user, id):
 def create_evento(current_user):
     data = request.get_json()
     
-    # Añade la validación para la nueva ubicación
     if not data.get('titulo') or not data.get('fecha_hora') or not data.get('ubicacion_evento'):
         return jsonify({'message': 'Título, Fecha/Hora y Ubicación son obligatorios'}), 400
 
@@ -583,7 +577,8 @@ def create_evento(current_user):
         ubicacion_mapa=data.get('ubicacion_mapa'),
         fecha_hora=parse_date(data.get('fecha_hora')),
         detalle=data.get('detalle'),
-        ubicacion_evento=data.get('ubicacion_evento'), # <-- AÑADE ESTA LÍNEA
+        ubicacion_evento=data.get('ubicacion_evento'),
+        hidden_from_users=data.get('hidden_from_users') or [],
         form_dinamico=data.get('form_dinamico'),
         user_id=current_user.id
     )
@@ -596,24 +591,43 @@ def create_evento(current_user):
 def get_eventos(current_user):
     now = datetime.now(timezone.utc)
     
-    # --- LÓGICA DE FILTRADO MEJORADA ---
+    base_query = Evento.query.filter(Evento.fecha_hora >= now)
     
-    # El Superusuario siempre ve todos los eventos futuros
-    if current_user.role == UserRole.SUPERUSER:
-        eventos = Evento.query.filter(
-            Evento.fecha_hora >= now
-        ).order_by(Evento.fecha_hora.asc()).all()
-    else:
-        # Los demás usuarios ven los eventos de su sucursal O los eventos globales
-        eventos = Evento.query.filter(
-            Evento.fecha_hora >= now,
+    if current_user.role != UserRole.SUPERUSER:
+        base_query = base_query.filter(
             or_(
-                Evento.ubicacion_evento == current_user.sucursal, # Condición 1: Coincide con mi sucursal
-                Evento.ubicacion_evento == 'Julia Tours'          # Condición 2: Es un evento global
+                Evento.ubicacion_evento == current_user.sucursal,
+                Evento.ubicacion_evento == 'Julia Tours'
             )
-        ).order_by(Evento.fecha_hora.asc()).all()
+        )
+
+    potential_events = base_query.order_by(Evento.fecha_hora.asc()).all()
+
+    eventos_visibles = []
+    for evento in potential_events:
+        if current_user.role == UserRole.SUPERUSER:
+            eventos_visibles.append(evento)
+            continue
+
+        hidden_list = evento.hidden_from_users or []
         
-    return jsonify([evento.to_dict() for evento in eventos])
+
+        try:
+            hidden_ids = {int(uid) for uid in hidden_list}
+        except (ValueError, TypeError):
+            hidden_ids = set()
+
+        if current_user.id not in hidden_ids:
+            eventos_visibles.append(evento)
+        
+    user_inscripcion_ids = {insc.evento_id for insc in Inscripcion.query.filter_by(user_id=current_user.id).all()}
+    eventos_data = []
+    for evento in eventos_visibles:
+        evento_dict = evento.to_dict()
+        evento_dict['is_user_inscribed'] = evento.id in user_inscripcion_ids
+        eventos_data.append(evento_dict)
+        
+    return jsonify(eventos_data)
 
 
 @app.route('/eventos/<int:evento_id>', methods=['GET', 'PUT', 'DELETE'])
@@ -642,7 +656,8 @@ def handle_single_evento(current_user, evento_id):
             evento.fecha_hora = parse_date(data.get('fecha_hora'))
         evento.detalle = data.get('detalle', evento.detalle)
         evento.form_dinamico = data.get('form_dinamico', evento.form_dinamico)
-        
+        evento.hidden_from_users = data.get('hidden_from_users') or []
+
         db.session.commit()
         return jsonify(evento.to_dict()), 200
 

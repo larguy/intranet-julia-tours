@@ -16,3 +16,18 @@
 .remove-btn.mini { width: 20px; height: 20px; font-size: 0.8em; }
 .option-input { display: flex; align-items: center; gap: 5px; margin-bottom: 5px; }
 .add-option-btn { font-size: 0.8em; padding: 4px 8px; }
+
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px; 
+    margin-top: 20px;
+}
+
+.multi-select {
+    width: 100%;
+    min-height: 150px; 
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 5px;
+}

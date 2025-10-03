@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import axios from 'axios';
+import apiClient from '../api';
 
 const ForgotPassword = () => {
     const [username, setUsername] = useState('');
@@ -11,7 +11,7 @@ const ForgotPassword = () => {
         setMessage('');
         setError('');
         try {
-            const response = await axios.post('http://127.0.0.1:5000/request-reset', { username });
+            const response = await apiClient.post('http://127.0.0.1:5000/request-reset', { username });
             setMessage(response.data.message);
         } catch (err) {
             setError('Ocurrió un error. Intenta de nuevo.');

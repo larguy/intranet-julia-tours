@@ -1,8 +1,6 @@
-// src/components/intranet/CrearEvento.js
-
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import apiClient from '../../api'; 
 import { useAuth } from '../../context/AuthContext';
 import './CrearEvento.css';
 
@@ -10,50 +8,63 @@ const CrearEvento = ({ modoEdicion = false }) => {
     const { eventoId } = useParams();
     const navigate = useNavigate();
     const { token } = useAuth();
-    const [ubicacionEvento, setUbicacionEvento] = useState('Buenos Aires'); // <-- AÑADE ESTA LÍNEA
     const sucursales = ["Julia Tours", "Buenos Aires", "Cordoba", "Rosario"];
 
-    // Estados para los campos del formulario
+    // Estados
     const [titulo, setTitulo] = useState('');
     const [bannerFile, setBannerFile] = useState(null);
     const [bannerPreview, setBannerPreview] = useState('');
-    const [existingBanner, setExistingBanner] = useState(null); 
+    const [existingBanner, setExistingBanner] = useState(null);
     const [ubicacionTexto, setUbicacionTexto] = useState('');
     const [ubicacionMapa, setUbicacionMapa] = useState('');
     const [fechaHora, setFechaHora] = useState('');
     const [detalle, setDetalle] = useState('');
+    const [ubicacionEvento, setUbicacionEvento] = useState('Buenos Aires');
     const [formDinamico, setFormDinamico] = useState([]);
+    const [allUsers, setAllUsers] = useState([]);
+    const [hiddenUsers, setHiddenUsers] = useState([]); 
 
     const [isLoading, setIsLoading] = useState(modoEdicion);
     const [error, setError] = useState('');
 
-    // Cargar datos del evento si estamos en modo edición
     useEffect(() => {
-        if (modoEdicion && eventoId && token) {
-            const fetchEvento = async () => {
+        const loadData = async () => {
+            if (token) {
+                setIsLoading(true);
                 try {
-                    const response = await axios.get(`${process.env.REACT_APP_API_URL}/eventos/${eventoId}`, { headers: { 'x-access-token': token } });
-                    const evento = response.data;
-                    setTitulo(evento.titulo);
-                    if(evento.banner_image) {
-                        setBannerPreview(`${process.env.REACT_APP_API_URL}/uploads/${evento.banner_image}`);
-                        setExistingBanner(evento.banner_image);
+                    const usersRes = await apiClient.get('/internos', { headers: { 'x-access-token': token } });
+                    setAllUsers(usersRes.data);
+
+                    if (modoEdicion && eventoId) {
+                        const eventoRes = await apiClient.get(`/eventos/${eventoId}`, { headers: { 'x-access-token': token } });
+                        const evento = eventoRes.data;
+                        setTitulo(evento.titulo);
+                        if(evento.banner_image) {
+                            setBannerPreview(`${process.env.REACT_APP_API_URL}/uploads/${evento.banner_image}`);
+                            setExistingBanner(evento.banner_image);
+                        }
+                        setUbicacionTexto(evento.ubicacion_texto || '');
+                        setUbicacionMapa(evento.ubicacion_mapa || '');
+                        setFechaHora(new Date(evento.fecha_hora).toISOString().slice(0, 16));
+                        setDetalle(evento.detalle || '');
+                        setUbicacionEvento(evento.ubicacion_evento);
+                        setFormDinamico(evento.form_dinamico || []);
+                        setHiddenUsers(evento.hidden_from_users || []);
                     }
-                    setUbicacionTexto(evento.ubicacion_texto || '');
-                    setUbicacionEvento(evento.ubicacion_evento); 
-                    setUbicacionMapa(evento.ubicacion_mapa || '');
-                    setFechaHora(new Date(evento.fecha_hora).toISOString().slice(0, 16));
-                    setDetalle(evento.detalle || '');
-                    setFormDinamico(evento.form_dinamico || []);
-                } catch (err) { 
-                    setError('No se pudo cargar el evento para editar.'); 
-                } finally { 
-                    setIsLoading(false); 
+                } catch (err) {
+                    setError('No se pudieron cargar los datos necesarios para el formulario.');
+                } finally {
+                    setIsLoading(false);
                 }
-            };
-            fetchEvento();
-        }
+            }
+        };
+        loadData();
     }, [modoEdicion, eventoId, token]);
+
+    const handleHiddenUsersChange = (e) => {
+        const selectedIds = Array.from(e.target.selectedOptions, option => parseInt(option.value, 10));
+        setHiddenUsers(selectedIds);
+    };
 
     const handleBannerChange = (e) => {
         const file = e.target.files[0];
@@ -63,7 +74,6 @@ const CrearEvento = ({ modoEdicion = false }) => {
         }
     };
     
-    // --- Lógica para el Formulario Dinámico ---
     const addCampo = (type) => setFormDinamico([...formDinamico, { id: `q${Date.now()}`, type, label: '', options: type === 'select' ? [''] : undefined }]);
     const handleCampoChange = (index, field, value) => { const n = [...formDinamico]; n[index][field] = value; setFormDinamico(n); };
     const handleOptionChange = (cIndex, oIndex, value) => { const n = [...formDinamico]; n[cIndex].options[oIndex] = value; setFormDinamico(n); };
@@ -77,12 +87,11 @@ const CrearEvento = ({ modoEdicion = false }) => {
         setError('');
         let bannerImageName = existingBanner;
 
-        // 1. Subir la imagen del banner solo si se seleccionó un archivo nuevo
         if (bannerFile) {
             const formData = new FormData();
             formData.append('upload', bannerFile);
             try {
-                const response = await axios.post(`${process.env.REACT_APP_API_URL}/upload-file`, formData, { headers: { 'x-access-token': token } });
+                const response = await apiClient.post('/upload-file', formData, { headers: { 'x-access-token': token } });
                 bannerImageName = response.data.url.split('/').pop();
             } catch (err) { 
                 setError('Error al subir la imagen del banner.'); 
@@ -91,15 +100,13 @@ const CrearEvento = ({ modoEdicion = false }) => {
             }
         }
         
-        // 2. Preparar los datos del evento
-        const eventoData = { titulo, banner_image: bannerImageName, ubicacion_texto: ubicacionTexto, ubicacion_mapa: ubicacionMapa, fecha_hora: fechaHora, detalle, ubicacion_evento: ubicacionEvento, form_dinamico: formDinamico };
+        const eventoData = { titulo, banner_image: bannerImageName, ubicacion_texto: ubicacionTexto, ubicacion_mapa: ubicacionMapa, fecha_hora: fechaHora, detalle, ubicacion_evento: ubicacionEvento, form_dinamico: formDinamico,  hidden_from_users: hiddenUsers };
 
-        // 3. Enviar los datos al backend (crear o actualizar)
         try {
             if (modoEdicion) {
-                await axios.put(`${process.env.REACT_APP_API_URL}/eventos/${eventoId}`, eventoData, { headers: { 'x-access-token': token } });
+                await apiClient.put(`/eventos/${eventoId}`, eventoData, { headers: { 'x-access-token': token } });
             } else {
-                await axios.post(`${process.env.REACT_APP_API_URL}/eventos`, eventoData, { headers: { 'x-access-token': token } });
+                await apiClient.post('/eventos', eventoData, { headers: { 'x-access-token': token } });
             }
             navigate('/index/eventos');
         } catch (err) { 
@@ -108,7 +115,7 @@ const CrearEvento = ({ modoEdicion = false }) => {
         }
     };
     
-    if (isLoading && modoEdicion) return <p>Cargando evento para editar...</p>;
+    if (isLoading) return <p>Cargando...</p>;
 
     return (
         <div className="crear-evento-container">
@@ -116,14 +123,12 @@ const CrearEvento = ({ modoEdicion = false }) => {
             {error && <p className="error-message">{error}</p>}
             
             <form onSubmit={handleSubmit} className="evento-form">
-                {/* --- Campos Principales --- */}
                 <div className="form-group">
                     <label>Título del Evento</label>
                     <input type="text" value={titulo} onChange={e => setTitulo(e.target.value)} required />
                 </div>
                 <div className="form-group">
                     <label>Imagen del Banner</label>
-                    {/* --- CÓDIGO CORREGIDO PARA USAR LAS VARIABLES --- */}
                     <input type="file" accept="image/*" onChange={handleBannerChange} />
                     {bannerPreview && <img src={bannerPreview} alt="Vista previa del banner" className="banner-preview" />}
                 </div>
@@ -138,7 +143,7 @@ const CrearEvento = ({ modoEdicion = false }) => {
                     </select>
                 </div>
                 <div className="form-group">
-                    <label>Ubicación (Texto)</label>
+                    <label>Dirección (Texto)</label>
                     <input type="text" value={ubicacionTexto} onChange={e => setUbicacionTexto(e.target.value)} placeholder="Ej: Salon, Quinta.." />
                 </div>
                 <div className="form-group">
@@ -149,8 +154,21 @@ const CrearEvento = ({ modoEdicion = false }) => {
                     <label>Detalle / Reseña (Opcional)</label>
                     <textarea value={detalle} onChange={e => setDetalle(e.target.value)} rows="4"></textarea>
                 </div>
-
-                {/* --- Formulario Dinámico --- */}
+                <div className="form-group">
+                    <label>Ocultar Evento a Usuarios (mantén Ctrl para seleccionar varios)</label>
+                    <select
+                        multiple={true}
+                        value={hiddenUsers}
+                        onChange={handleHiddenUsersChange}
+                        className="multi-select"
+                    >
+                        {allUsers.map(user => (
+                            <option key={user.id} value={user.id}>
+                                {user.nombre} {user.apellido}
+                            </option>
+                        ))}
+                    </select>
+                </div>
                 <div className="form-dinamico-section">
                     <h3>Preguntas Adicionales para Inscripción</h3>
                     {formDinamico.map((campo, index) => (
@@ -178,9 +196,23 @@ const CrearEvento = ({ modoEdicion = false }) => {
                     </div>
                 </div>
                 
-                <button type="submit" className="btn-primary" disabled={isLoading}>
-                    {isLoading ? 'Guardando...' : (modoEdicion ? 'Actualizar Evento' : 'Crear Evento')}
-                </button>
+                <div className="form-actions">
+                    <button 
+                        type="button" 
+                        className="btn-secondary" 
+                        onClick={() => navigate('/index/eventos')}
+                        disabled={isLoading}
+                    >
+                        Cancelar
+                    </button>
+                    <button 
+                        type="submit" 
+                        className="btn-primary" 
+                        disabled={isLoading}
+                    >
+                        {isLoading ? 'Guardando...' : (modoEdicion ? 'Actualizar Evento' : 'Crear Evento')}
+                    </button>
+                </div>
             </form>
         </div>
     );

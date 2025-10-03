@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import apiClient from '../api';
 import { useAuth } from '../context/AuthContext';
 import './UserProfile.css'; 
 
@@ -16,7 +16,7 @@ const UserProfile = () => {
     useEffect(() => {
         const fetchUserProfile = async () => {
             try {
-                const response = await axios.get(`${process.env.REACT_APP_API_URL}/user/${userId}/profile`, {
+                const response = await apiClient.get(`${process.env.REACT_APP_API_URL}/user/${userId}/profile`, {
                     headers: { 'x-access-token': token }
                 });
                 setUserData(response.data);

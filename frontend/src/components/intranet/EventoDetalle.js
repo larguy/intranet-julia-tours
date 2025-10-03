@@ -1,8 +1,6 @@
-// src/components/intranet/EventoDetalle.js
-
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import apiClient from '../../api';
 import { useAuth } from '../../context/AuthContext';
 import './EventoDetalle.css'; 
 
@@ -14,7 +12,6 @@ const EventoDetalle = () => {
     const [evento, setEvento] = useState(null);
     const [miInscripcion, setMiInscripcion] = useState(null);
 
-    // Estado local del formulario del usuario
     const [participa, setParticipa] = useState(false);
     const [detallesUsuario, setDetallesUsuario] = useState('');
     const [respuestasDinamicas, setRespuestasDinamicas] = useState({});
@@ -33,12 +30,10 @@ const EventoDetalle = () => {
         if (token && eventoId) {
             setIsLoading(true);
             try {
-                // 1. Obtener los detalles del evento
-                const eventoRes = await axios.get(`${process.env.REACT_APP_API_URL}/eventos/${eventoId}`, { headers: { 'x-access-token': token } });
+                const eventoRes = await apiClient.get(`${process.env.REACT_APP_API_URL}/eventos/${eventoId}`, { headers: { 'x-access-token': token } });
                 setEvento(eventoRes.data);
 
-                // 2. Obtener la inscripción del usuario actual
-                const miInscripcionRes = await axios.get(`${process.env.REACT_APP_API_URL}/eventos/${eventoId}/mi-inscripcion`, { headers: { 'x-access-token': token } });
+                const miInscripcionRes = await apiClient.get(`${process.env.REACT_APP_API_URL}/eventos/${eventoId}/mi-inscripcion`, { headers: { 'x-access-token': token } });
                 if (miInscripcionRes.data) {
                     const inscripcion = miInscripcionRes.data;
                     setMiInscripcion(inscripcion);
@@ -69,7 +64,7 @@ const EventoDetalle = () => {
         setError('');
         setSuccess('');
         try {
-            const response = await axios.post(
+            const response = await apiClient.post(
                 `${process.env.REACT_APP_API_URL}/eventos/${eventoId}/inscribir`,
                 { participa, detalles_usuario: detallesUsuario, respuestas_dinamicas: respuestasDinamicas },
                 { headers: { 'x-access-token': token } }
@@ -86,7 +81,7 @@ const EventoDetalle = () => {
     const handleDelete = async () => {
         if (window.confirm(`¿Estás seguro de que quieres eliminar el evento "${evento.titulo}"? Esta acción es irreversible.`)) {
             try {
-                await axios.delete(`${process.env.REACT_APP_API_URL}/eventos/${eventoId}`, { headers: { 'x-access-token': token } });
+                await apiClient.delete(`${process.env.REACT_APP_API_URL}/eventos/${eventoId}`, { headers: { 'x-access-token': token } });
                 navigate('/index/eventos'); 
             } catch (err) {
                 setError('Error al eliminar el evento.');
@@ -168,7 +163,6 @@ const EventoDetalle = () => {
                 </button>
             </form>
             
-            {/* --- LA SECCIÓN DE LISTA DE INSCRIPTOS HA SIDO ELIMINADA DE ESTE COMPONENTE --- */}
         </div>
     );
 };

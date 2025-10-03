@@ -224,8 +224,9 @@ class Evento(db.Model):
     detalle = db.Column(db.Text, nullable=True)
     ubicacion_evento = db.Column(db.String(100), nullable=False)
     
-
     form_dinamico = db.Column(db.JSON, nullable=True)
+
+    hidden_from_users = db.Column(db.JSON, nullable=True, default=[])
 
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     creador = db.relationship('User', lazy='joined')
@@ -242,6 +243,7 @@ class Evento(db.Model):
             'detalle': self.detalle,
             'ubicacion_evento': self.ubicacion_evento,
             'form_dinamico': self.form_dinamico,
+            'hidden_from_users': self.hidden_from_users or [],
             'creador': { 'nombre': self.creador.nombre, 'apellido': self.creador.apellido } if self.creador else None
         }
 

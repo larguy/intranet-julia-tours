@@ -1,8 +1,6 @@
-// src/components/intranet/Eventos.js
-
 import React, { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import axios from 'axios';
+import apiClient from '../../api';
 import { useAuth } from '../../context/AuthContext';
 import './Eventos.css';
 
@@ -20,7 +18,7 @@ const Eventos = () => {
         const fetchEventos = async () => {
             if (token) {
                 try {
-                    const response = await axios.get(`${process.env.REACT_APP_API_URL}/eventos`, {
+                    const response = await apiClient.get(`${process.env.REACT_APP_API_URL}/eventos`, {
                         headers: { 'x-access-token': token }
                     });
                     setEventos(response.data);
@@ -44,7 +42,7 @@ const Eventos = () => {
         setIsLoadingDetails(true);
         setActiveEventId(eventoId);
         try {
-            const response = await axios.get(`${process.env.REACT_APP_API_URL}/eventos/${eventoId}/inscripciones`, {
+            const response = await apiClient.get(`${process.env.REACT_APP_API_URL}/eventos/${eventoId}/inscripciones`, {
                 headers: { 'x-access-token': token }
             });
             setInscripciones(response.data);
@@ -121,7 +119,7 @@ const Eventos = () => {
                                 <p className="evento-location">{evento.ubicacion_texto}</p>
                                 <div className="evento-card-actions">
                                     <Link to={`/index/eventos/${evento.id}`} className="btn-primary">
-                                        Inscribirse
+                                        {evento.is_user_inscribed ? 'Modificar Inscripción' : 'Inscribirse'}
                                     </Link>
                                     {canCreateAndManage && (
                                         <button onClick={() => toggleDetails(evento.id)} className="btn-secondary">
@@ -129,7 +127,7 @@ const Eventos = () => {
                                         </button>
                                     )}
                                 </div>
-                            </div> {/* <-- ESTE ES EL </div> QUE FALTABA */}
+                            </div> 
                             
                             {activeEventId === evento.id && (
                                 <div className="evento-details-dropdown">
@@ -139,7 +137,7 @@ const Eventos = () => {
                                         <>
                                             <div className="participantes-lista-resumen">
                                                 <h4>Asisten ({inscripciones.filter(i => i.participa).length})</h4>
-                                                {/* Usamos una tabla para alinear las columnas */}
+                                                
                                                 <table className="resumen-tabla">
                                                     <thead>
                                                         <tr>

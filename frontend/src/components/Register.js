@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import axios from 'axios';
+import apiClient from '../api';
 
 const Register = () => {
     // Estados para los datos del formulario
@@ -46,7 +46,7 @@ const Register = () => {
 
         try {
             // --- 3. LLAMADA A LA API ---
-            await axios.post(`${process.env.REACT_APP_API_URL}/register`, { 
+            await apiClient.post(`${process.env.REACT_APP_API_URL}/register`, { 
                 username: username, 
                 password: password,
                 confirm_password: confirmPassword

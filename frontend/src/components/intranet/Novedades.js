@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import axios from 'axios';
+import apiClient from '../../api';
 import { useAuth } from '../../context/AuthContext';
 import Editor from '../Editor';
 import DOMPurify from 'dompurify';
@@ -52,7 +52,7 @@ const Novedades = () => {
     const fetchNovedades = useCallback(async (page = 1) => {
         setIsLoading(true);
         try {
-            const response = await axios.get(`${process.env.REACT_APP_API_URL}/novedades?page=${page}`, {
+            const response = await apiClient.get(`${process.env.REACT_APP_API_URL}/novedades?page=${page}`, {
                 headers: { 'x-access-token': token }
             });
             setNovedades(response.data.novedades);
@@ -78,7 +78,7 @@ const Novedades = () => {
         const formData = new FormData();
         formData.append('upload', file);
         try {
-            const response = await axios.post(`${process.env.REACT_APP_API_URL}/upload-file`, formData, {
+            const response = await apiClient.post(`${process.env.REACT_APP_API_URL}/upload-file`, formData, {
                 headers: { 'x-access-token': token }
             });
             setAttachments(prev => [...prev, { name: file.name, url: response.data.url }]);
@@ -117,7 +117,7 @@ const Novedades = () => {
         }
 
         try {
-            await axios.post(`${process.env.REACT_APP_API_URL}/novedades`, 
+            await apiClient.post(`${process.env.REACT_APP_API_URL}/novedades`, 
                 { 
                     asunto: asunto, 
                     content: content 
@@ -138,7 +138,7 @@ const Novedades = () => {
     const handleDeleteNovedad = async (novedadId) => {
         if (window.confirm('¿Estás seguro?')) {
             try {
-                await axios.delete(`${process.env.REACT_APP_API_URL}/novedades/${novedadId}`, { headers: { 'x-access-token': token } });
+                await apiClient.delete(`${process.env.REACT_APP_API_URL}/novedades/${novedadId}`, { headers: { 'x-access-token': token } });
                 fetchNovedades(currentPage);
             } catch (err) {
                 setError(err.response?.data?.message || 'Error al eliminar la novedad.');

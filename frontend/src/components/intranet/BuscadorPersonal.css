@@ -99,3 +99,21 @@
     text-decoration: underline;
     color: #007bff; 
 }
+
+
+.results-table.sortable thead th {
+    cursor: pointer;
+    user-select: none; 
+    position: relative;
+}
+
+.results-table.sortable thead th:hover {
+    background-color: #f0f0f0;
+}
+
+.results-table.sortable thead th span {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+}
