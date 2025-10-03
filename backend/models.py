@@ -219,16 +219,16 @@ class Evento(db.Model):
     titulo = db.Column(db.String(200), nullable=False)
     banner_image = db.Column(db.String(100), nullable=True)
     ubicacion_texto = db.Column(db.String(300), nullable=True)
-    ubicacion_mapa = db.Column(db.String(500), nullable=True) # Para el enlace de Google Maps
+    ubicacion_mapa = db.Column(db.String(500), nullable=True) 
     fecha_hora = db.Column(db.DateTime(timezone=True), nullable=False)
     detalle = db.Column(db.Text, nullable=True)
+    ubicacion_evento = db.Column(db.String(100), nullable=False)
     
-    # Guardaremos la estructura del formulario dinámico como JSON
-    # Ejemplo: [{'id': 'q1', 'type': 'checkbox', 'label': '¿Traes acompañante?'}, ...]
+
     form_dinamico = db.Column(db.JSON, nullable=True)
 
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    creador = db.relationship('User')
+    creador = db.relationship('User', lazy='joined')
     inscripciones = db.relationship('Inscripcion', backref='evento', lazy='dynamic', cascade="all, delete-orphan")
 
     def to_dict(self):
@@ -240,6 +240,7 @@ class Evento(db.Model):
             'ubicacion_mapa': self.ubicacion_mapa,
             'fecha_hora': self.fecha_hora.isoformat(),
             'detalle': self.detalle,
+            'ubicacion_evento': self.ubicacion_evento,
             'form_dinamico': self.form_dinamico,
             'creador': { 'nombre': self.creador.nombre, 'apellido': self.creador.apellido } if self.creador else None
         }
@@ -251,11 +252,10 @@ class Inscripcion(db.Model):
     participa = db.Column(db.Boolean, nullable=False, default=False)
     detalles_usuario = db.Column(db.Text, nullable=True)
 
-    # Guardaremos las respuestas al formulario dinámico como JSON
-    # Ejemplo: {'q1': True, 'q2': 'Opción A'}
+
     respuestas_dinamicas = db.Column(db.JSON, nullable=True)
 
-    usuario = db.relationship('User')
+    usuario = db.relationship('User', foreign_keys=[user_id], lazy='joined')
 
     def to_dict(self):
         return {

@@ -1,0 +1,18 @@
+.crear-evento-container { max-width: 800px; margin: 0 auto; padding: 20px; }
+.evento-form .form-group { margin-bottom: 20px; }
+.evento-form label { display: block; font-weight: bold; margin-bottom: 5px; }
+.evento-form input[type="text"], .evento-form input[type="url"], .evento-form input[type="datetime-local"], .evento-form textarea { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; }
+.banner-preview { max-width: 100%; height: auto; margin-top: 10px; border-radius: 5px; }
+.form-dinamico-section { margin-top: 30px; padding: 20px; border: 1px solid #eee; border-radius: 5px; }
+.campo-dinamico { margin-bottom: 15px; }
+.campo-label-input { width: 100%; font-weight: bold; }
+.campo-options { margin-left: 20px; margin-top: 5px; }
+.campo-options input { margin-bottom: 5px; }
+.add-campo-buttons { display: flex; gap: 10px; margin-top: 10px; }
+
+.campo-header { display: flex; align-items: center; gap: 10px; }
+.campo-label-input { flex-grow: 1; }
+.remove-btn { background: #f8d7da; color: #721c24; border: none; border-radius: 50%; width: 24px; height: 24px; cursor: pointer; font-weight: bold; }
+.remove-btn.mini { width: 20px; height: 20px; font-size: 0.8em; }
+.option-input { display: flex; align-items: center; gap: 5px; margin-bottom: 5px; }
+.add-option-btn { font-size: 0.8em; padding: 4px 8px; }

@@ -208,7 +208,7 @@ const Profile = () => {
                         </div>
                         <div className="form-group">
                             <label>Sucursal:</label>
-                            <select name="sucursal" value={profileData.sucursal || ''} onChange={handleChange} required>
+                            <select name="sucursal" value={profileData.sucursal || ''} onChange={handleChange} required disabled>
                                 <option value="">Selecciona una sucursal...</option>
                                 {sucursales.map(s => <option key={s} value={s}>{s}</option>)}
                             </select>

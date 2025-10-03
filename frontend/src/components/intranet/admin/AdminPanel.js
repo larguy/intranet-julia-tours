@@ -135,6 +135,7 @@ const GuardiasManager = ({ token }) => {
 const AdminPanel = () => {
     const { user, token } = useAuth();
     const sectores = ["Administracion", "Aereos", "Comercial", "Comercial interior", "Data entry", "Diseño - Marketing", "Documentacion", "Grupos", "Hotel ya - Trenes", "Nacional", "Producto", "Recepcion", "Operaciones", "Sistemas", "Ventas Area 1", "Ventas Brasil", "Ventas Europa", "Ventas Exoticos", "Ventas Interior", "Ycix"].sort();
+    const sucursales = ["Buenos Aires", "Cordoba", "Comercial Interior", "Rosario"];
     const [allUsers, setAllUsers] = useState([]);
     const [filteredUsers, setFilteredUsers] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
@@ -232,6 +233,25 @@ const AdminPanel = () => {
      }
     };
 
+    const handleSucursalChange = async (userId, newSucursal) => {
+        setMessage('');
+        setError('');
+        try {
+            await axios.post(`${process.env.REACT_APP_API_URL}/admin/users/${userId}/sucursal`, 
+                { sucursal: newSucursal },
+                { headers: { 'x-access-token': token } }
+            );
+            
+            setAllUsers(prevUsers => prevUsers.map(u => 
+                u.id === userId ? { ...u, sucursal: newSucursal } : u
+            ));
+            setMessage('Sucursal actualizada correctamente.');
+
+        } catch (error) {
+            setError(error.response?.data?.message || "Error al actualizar la sucursal.");
+        }
+    };
+
     const handleInternoChange = async (userId) => {
         const newInterno = prompt("Introduce el nuevo número de interno:");
         if (newInterno === null || newInterno.trim() === '') return;
@@ -296,6 +316,7 @@ const AdminPanel = () => {
                                     <th>Rol</th>
                                     <th>Guardia</th>
                                     <th>Sector</th>
+                                    <th>Sucursal</th> 
                                     <th>Acciones</th>
                                 </tr>
                             </thead>
@@ -306,6 +327,7 @@ const AdminPanel = () => {
                                         <td>{u.id === user.id ? <strong>{u.role} (Actual)</strong> : <select value={u.role} onChange={(e) => handleRoleChange(u.id, e.target.value)} className="admin-select"><option value="VIEWER">Solo Lectura</option><option value="EDITOR">Editor</option><option value="SUPERUSER">Superusuario</option></select>}</td>
                                         <td><select value={u.guardia_nro || ''} onChange={(e) => handleGuardiaChange(u.id, e.target.value)} className="admin-select"><option value="">Sin Asignar</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option></select></td>
                                         <td>{u.id === user.id ? (<strong>{u.sector}</strong>) : (<select value={u.sector || ''} onChange={(e) => handleSectorChange(u.id, e.target.value)} className="admin-select"> <option value="">Seleccionar...</option>{sectores.map(s => <option key={s} value={s}>{s}</option>)}</select>)}</td>
+                                        <td>{u.id === user.id ? (<strong>{u.sucursal}</strong>) : (<select value={u.sucursal || ''} onChange={(e) => handleSucursalChange(u.id, e.target.value)} className="admin-select"><option value="">Seleccionar...</option>{sucursales.map(s => <option key={s} value={s}>{s}</option>)}</select>)}</td>
                                         <td>{u.id !== user.id && (<div className="admin-actions"><button onClick={() => handleInternoChange(u.id)} className="action-button">Cambiar Interno</button><button onClick={() => handleDeleteUser(u.id, u.username)} className="action-button delete">Eliminar</button></div>)}</td>
                                     </tr>
                                 ))}

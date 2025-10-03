@@ -1,0 +1,140 @@
+.eventos-container { max-width: 900px; margin: 0 auto; padding: 20px; }
+.eventos-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+.eventos-list { display: grid; gap: 20px; }
+.evento-card { background: #fff; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); overflow: hidden; display: flex; flex-direction: column; }
+.evento-banner { width: 100%; height: 200px; object-fit: cover; }
+.evento-card-content { padding: 20px; }
+.evento-card-content h2 { margin: 0 0 10px; }
+.evento-date { font-weight: bold; color: #292929; }
+.evento-location { color: #6c757d; margin-bottom: 20px; }
+
+.evento-card-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+}
+
+
+.evento-details-dropdown {
+    padding: 20px;
+    background-color: #f8f9fa;
+    border-top: 1px solid #e0e0e0;
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* Dos columnas */
+    gap: 20px;
+}
+
+.participantes-lista-resumen h4,
+.no-participan-lista-resumen h4 {
+    margin: 0 0 10px;
+    color: #333;
+    border-bottom: 1px solid #ccc;
+    padding-bottom: 5px;
+}
+
+.participantes-lista-resumen ul,
+.no-participan-lista-resumen ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.participantes-lista-resumen li,
+.no-participan-lista-resumen li {
+    padding: 4px 0;
+    font-size: 0.9em;
+}
+
+
+.evento-details-dropdown {
+    padding: 20px;
+    background-color: #f8f9fa;
+    border-top: 1px solid #e0e0e0;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr; 
+    gap: 25px;
+}
+
+.participantes-lista-resumen h4,
+.no-participan-lista-resumen h4,
+.resumen-respuestas h4 {
+    margin: 0 0 10px;
+    color: #333;
+    border-bottom: 1px solid #ccc;
+    padding-bottom: 5px;
+}
+
+.participantes-lista-resumen ul,
+.no-participan-lista-resumen ul,
+.resumen-respuestas ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.participantes-lista-resumen li,
+.no-participan-lista-resumen li {
+    padding: 4px 0;
+    font-size: 0.9em;
+}
+
+.pregunta-resumen {
+    margin-bottom: 15px;
+    font-size: 0.9em;
+}
+.pregunta-resumen strong {
+    display: block;
+    margin-bottom: 5px;
+    color: #000;
+}
+.pregunta-resumen ul {
+    padding-left: 10px;
+}
+.pregunta-resumen li {
+    display: flex;
+    justify-content: space-between;
+    padding: 2px 0;
+}
+.pregunta-resumen li span {
+    font-weight: bold;
+}
+
+/* --- ESTILOS PARA LA TABLA DE RESUMEN DE ASISTENTES --- */
+
+.resumen-tabla {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+    font-size: 0.9em;
+}
+
+.resumen-tabla th,
+.resumen-tabla td {
+    padding: 6px 8px;
+    text-align: left;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.resumen-tabla th {
+    font-weight: bold;
+    color: #333;
+}
+
+/* Ancho de las columnas */
+.resumen-tabla th:first-child,
+.resumen-tabla td:first-child {
+    width: 40%;
+}
+
+.resumen-tabla th:last-child,
+.resumen-tabla td:last-child {
+    width: 60%;
+}
+
+/* Estilo para la celda de detalles */
+.detalle-celda {
+    font-style: italic;
+    color: #555;
+    white-space: pre-wrap; /* Respeta saltos de línea y espacios */
+    word-break: break-word; /* Evita que textos largos rompan el layout */
+}

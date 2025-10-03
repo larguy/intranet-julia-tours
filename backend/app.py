@@ -16,7 +16,8 @@ from werkzeug.utils import secure_filename
 from dateutil.parser import parse as parse_date
 
 from config import Config
-from models import db, User, UserRole, Post, Novedad, AgendaContact, Attachment, Reunion, GuardiaFecha
+# --- LÍNEA CORREGIDA ---
+from models import db, User, UserRole, Post, Novedad, AgendaContact, Attachment, Reunion, GuardiaFecha, Evento, Inscripcion
 
 app = Flask(__name__)
 app.config.from_object(Config)
@@ -27,7 +28,6 @@ CORS(app)
 mail = Mail(app)
 
 EMAIL_REGEX = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
-
 
 def token_required(f):
     @wraps(f)
@@ -204,8 +204,6 @@ def update_profile(current_user):
     db.session.commit()
     return jsonify({'message': 'Perfil actualizado exitosamente'}), 200
 
-# --- INICIO DE LA SECCIÓN DE MANEJO DE ARCHIVOS  ---
-
 @app.route('/profile/upload-image', methods=['POST'])
 @token_required
 def upload_profile_image(current_user):
@@ -239,8 +237,6 @@ def upload_file(current_user):
 def serve_uploaded_file(filename):
     return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
 
-# --- FIN DE LA SECCIÓN DE MANEJO DE ARCHIVOS ---
-
 @app.route('/user/<int:user_id>/profile', methods=['GET'])
 @token_required
 def get_user_profile(current_user, user_id):
@@ -260,7 +256,7 @@ def get_internos(current_user):
 @permission_required('SUPERUSER')
 def get_all_users(current_user):
     users = User.query.all()
-    user_list = [{'id': user.id, 'username': user.username, 'role': user.role.name, 'guardia_nro': user.guardia_nro, 'sector': user.sector} for user in users]
+    user_list = [{'id': user.id, 'username': user.username, 'role': user.role.name, 'guardia_nro': user.guardia_nro, 'sector': user.sector, 'sucursal': user.sucursal} for user in users]
     return jsonify(user_list)
 
 @app.route('/admin/users/<int:user_id>/role', methods=['POST'])
@@ -292,7 +288,74 @@ def set_user_guardia(current_user, user_id):
         return jsonify({'message': f'Guardia para {user_to_modify.username} actualizada.'})
     else:
         return jsonify({'message': 'Número de guardia inválido. Debe ser entre 1 y 4, o nulo.'}), 400
+        
+@app.route('/admin/users/<int:user_id>/sector', methods=['POST'])
+@permission_required('SUPERUSER')
+def set_user_sector(current_user, user_id):
+    user_to_modify = db.session.get(User, user_id)
+    if not user_to_modify: return jsonify({'message': 'Usuario no encontrado'}), 404
+    if user_to_modify.id == current_user.id: return jsonify({'message': 'No puedes modificar tu propio sector desde este panel.'}), 403
+    data = request.get_json()
+    new_sector = data.get('sector')
+    if new_sector and isinstance(new_sector, str) and len(new_sector) < 100:
+        user_to_modify.sector = new_sector
+        db.session.commit()
+        return jsonify({'message': f'Sector de {user_to_modify.username} actualizado.'})
+    else:
+        return jsonify({'message': 'El sector proporcionado es inválido.'}), 400
 
+@app.route('/admin/users/<int:user_id>/interno', methods=['POST'])
+@permission_required('SUPERUSER')
+def set_user_interno(current_user, user_id):
+    user_to_modify = db.session.get(User, user_id)
+    if not user_to_modify: return jsonify({'message': 'Usuario no encontrado'}), 404
+    if user_to_modify.id == current_user.id: return jsonify({'message': 'No puedes modificar tu propio interno desde este panel.'}), 403
+    data = request.get_json()
+    new_interno = data.get('interno')
+    if new_interno and isinstance(new_interno, str) and len(new_interno) < 20:
+        user_to_modify.interno = new_interno
+        db.session.commit()
+        return jsonify({'message': f'Interno de {user_to_modify.username} actualizado.'})
+    else:
+        return jsonify({'message': 'El interno proporcionado es inválido.'}), 400
+    
+@app.route('/admin/users/<int:user_id>/sucursal', methods=['POST'])
+@permission_required('SUPERUSER')
+def set_user_sucursal(current_user, user_id):
+    user_to_modify = db.session.get(User, user_id)
+    if not user_to_modify:
+        return jsonify({'message': 'Usuario no encontrado'}), 404
+
+    # Un Superusuario no puede modificar su propia sucursal desde aquí
+    if user_to_modify.id == current_user.id:
+        return jsonify({'message': 'No puedes modificar tu propia sucursal desde este panel.'}), 403
+
+    data = request.get_json()
+    new_sucursal = data.get('sucursal')
+
+    # Puedes añadir una validación contra una lista fija de sucursales si quieres
+    if new_sucursal and isinstance(new_sucursal, str):
+        user_to_modify.sucursal = new_sucursal
+        db.session.commit()
+        return jsonify({'message': f'Sucursal de {user_to_modify.username} actualizada.'})
+    else:
+        return jsonify({'message': 'La sucursal proporcionada es inválida.'}), 400
+
+@app.route('/admin/users/<int:user_id>', methods=['DELETE'])
+@permission_required('SUPERUSER')
+def delete_user(current_user, user_id):
+    user_to_delete = db.session.get(User, user_id)
+    if not user_to_delete: return jsonify({'message': 'Usuario no encontrado'}), 404
+    if user_to_delete.id == current_user.id: return jsonify({'message': 'No puedes eliminar tu propia cuenta de superusuario.'}), 403
+    try:
+        db.session.delete(user_to_delete)
+        db.session.commit()
+        return jsonify({'message': f'Usuario {user_to_delete.username} ha sido eliminado.'}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'message': f'Error al eliminar el usuario: {str(e)}'}), 500
+
+# --- SECCIÓN DE INFORMACIÓN POR SECTOR ---
 @app.route('/informacion/<string:sector_name>/all', methods=['GET'])
 @token_required
 def get_all_posts_by_sector(current_user, sector_name):
@@ -346,79 +409,74 @@ def handle_single_post(current_user, post_id):
         db.session.commit()
         return jsonify({'message': 'Publicación eliminada correctamente'}), 200
 
-
-@app.route('/novedades', methods=['GET'])
+# --- SECCIÓN DE NOVEDADES ---
+@app.route('/novedades', methods=['GET', 'POST'])
 @token_required
-def get_novedades(current_user):
-    page = request.args.get('page', 1, type=int)
-    items_per_page = 10
-    pagination = Novedad.query.order_by(Novedad.created_at.desc()).paginate(page=page, per_page=items_per_page, error_out=False)
-    novedades = pagination.items
-    return jsonify({'novedades': [n.to_dict() for n in novedades], 'total_pages': pagination.pages, 'current_page': pagination.page, 'has_next': pagination.has_next, 'has_prev': pagination.has_prev})
+def handle_novedades(current_user):
+    if request.method == 'GET':
+        page = request.args.get('page', 1, type=int)
+        items_per_page = 10
+        pagination = Novedad.query.order_by(Novedad.created_at.desc()).paginate(page=page, per_page=items_per_page, error_out=False)
+        return jsonify({'novedades': [n.to_dict() for n in pagination.items], 'total_pages': pagination.pages, 'current_page': pagination.page, 'has_next': pagination.has_next, 'has_prev': pagination.has_prev})
 
-@app.route('/novedades', methods=['POST'])
-@token_required
-def create_novedad(current_user):
-    data = request.get_json()
-    asunto = data.get('asunto')
-    content = data.get('content')
-    if not asunto or not content: return jsonify({'message': 'Faltan datos (asunto o contenido)'}), 400
-    if (current_user.role == UserRole.SUPERUSER) or (current_user.role == UserRole.EDITOR and current_user.sector == 'Administracion'):
+    if request.method == 'POST':
+        if not (current_user.role == UserRole.SUPERUSER or (current_user.role == UserRole.EDITOR and current_user.sector == 'Administracion')):
+            return jsonify({'message': 'Permiso denegado para publicar novedades'}), 403
+        data = request.get_json()
+        asunto, content = data.get('asunto'), data.get('content')
+        if not asunto or not content: return jsonify({'message': 'Faltan datos (asunto o contenido)'}), 400
         new_novedad = Novedad(asunto=asunto, content=content, user_id=current_user.id)
         db.session.add(new_novedad)
         db.session.commit()
         return jsonify(new_novedad.to_dict()), 201
-    else:
-        return jsonify({'message': 'Permiso denegado para publicar novedades'}), 403
 
 @app.route('/novedades/<int:novedad_id>', methods=['DELETE'])
 @token_required
 def delete_novedad(current_user, novedad_id):
     novedad = db.session.get(Novedad, novedad_id)
     if not novedad: return jsonify({'message': 'Novedad no encontrada'}), 404
-    if (current_user.role == UserRole.SUPERUSER) or (novedad.user_id == current_user.id):
-        db.session.delete(novedad)
-        db.session.commit()
-        return jsonify({'message': 'Novedad eliminada correctamente'}), 200
-    else:
-        return jsonify({'message': 'Permiso denegado para eliminar esta novedad'}), 403
+    can_delete = (current_user.role == UserRole.SUPERUSER or novedad.user_id == current_user.id)
+    if not can_delete: return jsonify({'message': 'Permiso denegado para eliminar esta novedad'}), 403
+    db.session.delete(novedad)
+    db.session.commit()
+    return jsonify({'message': 'Novedad eliminada correctamente'}), 200
 
-@app.route('/agenda', methods=['GET'])
+# --- SECCIÓN DE AGENDA ---
+@app.route('/agenda', methods=['GET', 'POST'])
 @token_required
-def get_agenda_contacts(current_user):
-    contacts = AgendaContact.query.order_by(AgendaContact.nombre).all()
-    return jsonify([contact.to_dict() for contact in contacts])
+def handle_agenda(current_user):
+    if request.method == 'GET':
+        contacts = AgendaContact.query.order_by(AgendaContact.nombre).all()
+        return jsonify([contact.to_dict() for contact in contacts])
 
-@app.route('/agenda', methods=['POST'])
-@permission_required('EDITOR', 'SUPERUSER')
-def create_agenda_contact(current_user):
-    data = request.get_json()
-    if not data.get('nombre') or not data.get('telefono'): return jsonify({'message': 'Nombre y Teléfono son campos obligatorios'}), 400
-    new_contact = AgendaContact(nombre=data.get('nombre'), domicilio=data.get('domicilio'), telefono=data.get('telefono'), email=data.get('email'), pagina_web=data.get('pagina_web'), pais=data.get('pais'), provincia=data.get('provincia'), localidad=data.get('localidad'), detalle=data.get('detalle'))
-    db.session.add(new_contact)
-    db.session.commit()
-    return jsonify(new_contact.to_dict()), 201
+    if request.method == 'POST':
+        if not (current_user.role == UserRole.EDITOR or current_user.role == UserRole.SUPERUSER):
+            return jsonify({'message': 'Permiso denegado'}), 403
+        data = request.get_json()
+        if not data.get('nombre') or not data.get('telefono'): return jsonify({'message': 'Nombre y Teléfono son campos obligatorios'}), 400
+        new_contact = AgendaContact(**data)
+        db.session.add(new_contact)
+        db.session.commit()
+        return jsonify(new_contact.to_dict()), 201
 
-@app.route('/agenda/<int:contact_id>', methods=['PUT'])
+@app.route('/agenda/<int:contact_id>', methods=['PUT', 'DELETE'])
 @permission_required('EDITOR', 'SUPERUSER')
-def update_agenda_contact(current_user, contact_id):
+def handle_single_agenda_contact(current_user, contact_id):
     contact = db.session.get(AgendaContact, contact_id)
     if not contact: return jsonify({'message': 'Contacto no encontrado'}), 404
-    data = request.get_json()
-    if not data.get('nombre') or not data.get('telefono'): return jsonify({'message': 'Nombre y Teléfono son campos obligatorios'}), 400
-    contact.nombre, contact.domicilio, contact.telefono, contact.email, contact.pagina_web, contact.pais, contact.provincia, contact.localidad, contact.detalle = data.get('nombre'), data.get('domicilio'), data.get('telefono'), data.get('email'), data.get('pagina_web'), data.get('pais'), data.get('provincia'), data.get('localidad'), data.get('detalle')
-    db.session.commit()
-    return jsonify(contact.to_dict())
+    if request.method == 'PUT':
+        data = request.get_json()
+        if not data.get('nombre') or not data.get('telefono'): return jsonify({'message': 'Nombre y Teléfono son campos obligatorios'}), 400
+        for key, value in data.items():
+            setattr(contact, key, value)
+        db.session.commit()
+        return jsonify(contact.to_dict())
+    if request.method == 'DELETE':
+        db.session.delete(contact)
+        db.session.commit()
+        return jsonify({'message': 'Contacto eliminado correctamente'})
 
-@app.route('/agenda/<int:contact_id>', methods=['DELETE'])
-@permission_required('EDITOR', 'SUPERUSER')
-def delete_agenda_contact(current_user, contact_id):
-    contact = db.session.get(AgendaContact, contact_id)
-    if not contact: return jsonify({'message': 'Contacto no encontrado'}), 404
-    db.session.delete(contact)
-    db.session.commit()
-    return jsonify({'message': 'Contacto eliminado correctamente'})
-    
+# --- SECCIÓN DE REUNIONES Y GUARDIAS ---
 @app.route('/reuniones/all', methods=['GET'])
 @token_required
 def get_all_reuniones(current_user):
@@ -451,55 +509,52 @@ def create_reunion(current_user):
         db.session.rollback()
         return jsonify({'message': f'Error en el servidor: {str(e)}'}), 500
 
-@app.route('/reuniones/<int:reunion_id>', methods=['PUT'])
+@app.route('/reuniones/<int:reunion_id>', methods=['PUT', 'DELETE'])
 @permission_required('EDITOR', 'SUPERUSER')
-def update_reunion(current_user, reunion_id):
+def handle_single_reunion(current_user, reunion_id):
     reunion = db.session.get(Reunion, reunion_id)
     if not reunion: return jsonify({'message': 'Reunión no encontrada'}), 404
-    data = request.get_json()
-    try:
-        reunion.tema, reunion.start_time, reunion.end_time, reunion.ubicacion, reunion.cantidad_personas, reunion.zoom_link, reunion.convoca, reunion.proveedor, reunion.necesita_bebida, reunion.necesita_comida = data.get('tema'), parse_date(data.get('start')), parse_date(data.get('end')), data.get('ubicacion'), data.get('cantidad_personas'), data.get('zoom_link'), data.get('convoca'), data.get('proveedor'), data.get('necesita_bebida', False), data.get('necesita_comida')
+    if request.method == 'PUT':
+        data = request.get_json()
+        try:
+            for key, value in data.items():
+                if key in ['start', 'end']:
+                    setattr(reunion, f"{key}_time", parse_date(value))
+                else:
+                    setattr(reunion, key, value)
+            db.session.commit()
+            return jsonify(reunion.to_dict())
+        except Exception as e:
+            db.session.rollback()
+            return jsonify({'message': f'Error en el servidor: {str(e)}'}), 500
+    if request.method == 'DELETE':
+        db.session.delete(reunion)
         db.session.commit()
-        return jsonify(reunion.to_dict())
-    except Exception as e:
-        db.session.rollback()
-        return jsonify({'message': f'Error en el servidor: {str(e)}'}), 500
+        return jsonify({'message': 'Reunión eliminada correctamente'})
 
-@app.route('/reuniones/<int:reunion_id>', methods=['DELETE'])
-@permission_required('EDITOR', 'SUPERUSER')
-def delete_reunion(current_user, reunion_id):
-    reunion = db.session.get(Reunion, reunion_id)
-    if not reunion: return jsonify({'message': 'Reunión no encontrada'}), 404
-    db.session.delete(reunion)
-    db.session.commit()
-    return jsonify({'message': 'Reunión eliminada correctamente'})
-
-@app.route('/guardias/fechas', methods=['GET'])
+@app.route('/guardias/fechas', methods=['GET', 'POST'])
 @token_required
-def get_guardias_fechas(current_user):
-    fechas = GuardiaFecha.query.order_by(GuardiaFecha.fecha.asc()).all()
-    return jsonify([fecha.to_dict() for fecha in fechas])
-
-@app.route('/guardias/fechas', methods=['POST'])
-@token_required
-def create_guardia_fecha(current_user):
-    if not (current_user.role == UserRole.SUPERUSER or (current_user.role == UserRole.EDITOR and current_user.sector == 'Administracion')):
-        return jsonify({'message': 'Permiso denegado'}), 403
-    data = request.get_json()
-    fecha_str = data.get('fecha')
-    guardia_nro = data.get('guardia_nro')
-    if not fecha_str or not guardia_nro: return jsonify({'message': 'Faltan datos (fecha, guardia_nro)'}), 400
-    try:
-        fecha_obj = datetime.strptime(fecha_str, '%Y-%m-%d').date()
-        if GuardiaFecha.query.filter_by(fecha=fecha_obj).first():
-            return jsonify({'message': 'Ya existe una guardia asignada para esa fecha'}), 409
-        new_guardia_fecha = GuardiaFecha(fecha=fecha_obj, guardia_nro=int(guardia_nro))
-        db.session.add(new_guardia_fecha)
-        db.session.commit()
-        return jsonify(new_guardia_fecha.to_dict()), 201
-    except Exception as e:
-        db.session.rollback()
-        return jsonify({'message': f'Error en el servidor: {str(e)}'}), 500
+def handle_guardias_fechas(current_user):
+    if request.method == 'GET':
+        fechas = GuardiaFecha.query.order_by(GuardiaFecha.fecha.asc()).all()
+        return jsonify([fecha.to_dict() for fecha in fechas])
+    if request.method == 'POST':
+        if not (current_user.role == UserRole.SUPERUSER or (current_user.role == UserRole.EDITOR and current_user.sector == 'Administracion')):
+            return jsonify({'message': 'Permiso denegado'}), 403
+        data = request.get_json()
+        fecha_str, guardia_nro = data.get('fecha'), data.get('guardia_nro')
+        if not fecha_str or not guardia_nro: return jsonify({'message': 'Faltan datos (fecha, guardia_nro)'}), 400
+        try:
+            fecha_obj = datetime.strptime(fecha_str, '%Y-%m-%d').date()
+            if GuardiaFecha.query.filter_by(fecha=fecha_obj).first():
+                return jsonify({'message': 'Ya existe una guardia asignada para esa fecha'}), 409
+            new_guardia_fecha = GuardiaFecha(fecha=fecha_obj, guardia_nro=int(guardia_nro))
+            db.session.add(new_guardia_fecha)
+            db.session.commit()
+            return jsonify(new_guardia_fecha.to_dict()), 201
+        except Exception as e:
+            db.session.rollback()
+            return jsonify({'message': f'Error en el servidor: {str(e)}'}), 500
 
 @app.route('/guardias/fechas/<int:id>', methods=['DELETE'])
 @token_required
@@ -507,77 +562,132 @@ def delete_guardia_fecha(current_user, id):
     if not (current_user.role == UserRole.SUPERUSER or (current_user.role == UserRole.EDITOR and current_user.sector == 'Administracion')):
         return jsonify({'message': 'Permiso denegado'}), 403
     guardia_fecha = db.session.get(GuardiaFecha, id)
-    if not guardia_fecha:
-        return jsonify({'message': 'Fecha de guardia no encontrada'}), 404
+    if not guardia_fecha: return jsonify({'message': 'Fecha de guardia no encontrada'}), 404
     db.session.delete(guardia_fecha)
     db.session.commit()
     return jsonify({'message': 'Fecha de guardia eliminada'})
 
-@app.route('/admin/users/<int:user_id>/interno', methods=['POST'])
-@permission_required('SUPERUSER')
-def set_user_interno(current_user, user_id):
-    user_to_modify = db.session.get(User, user_id)
-    if not user_to_modify:
-        return jsonify({'message': 'Usuario no encontrado'}), 404
-    
-    # Un Superusuario no puede modificar su propio interno desde aquí para evitar auto-bloqueos
-    if user_to_modify.id == current_user.id:
-        return jsonify({'message': 'No puedes modificar tu propio interno desde este panel.'}), 403
-
+@app.route('/eventos', methods=['POST'])
+@permission_required('EDITOR', 'SUPERUSER')
+def create_evento(current_user):
     data = request.get_json()
-    new_interno = data.get('interno')
-
-    # Hacemos una validación simple (puedes hacerla más compleja si es necesario)
-    if new_interno and isinstance(new_interno, str) and len(new_interno) < 20:
-        user_to_modify.interno = new_interno
-        db.session.commit()
-        return jsonify({'message': f'Interno de {user_to_modify.username} actualizado.'})
-    else:
-        return jsonify({'message': 'El interno proporcionado es inválido.'}), 400
-
-# --- NUEVO ENDPOINT PARA ELIMINAR UN USUARIO ---
-@app.route('/admin/users/<int:user_id>', methods=['DELETE'])
-@permission_required('SUPERUSER')
-def delete_user(current_user, user_id):
-    user_to_delete = db.session.get(User, user_id)
-    if not user_to_delete:
-        return jsonify({'message': 'Usuario no encontrado'}), 404
-
-    # Medida de seguridad: Un Superusuario no puede eliminarse a sí mismo
-    if user_to_delete.id == current_user.id:
-        return jsonify({'message': 'No puedes eliminar tu propia cuenta de superusuario.'}), 403
-
-    try:
-        db.session.delete(user_to_delete)
-        db.session.commit()
-        return jsonify({'message': f'Usuario {user_to_delete.username} ha sido eliminado.'}), 200
-    except Exception as e:
-        db.session.rollback()
-        return jsonify({'message': f'Error al eliminar el usuario: {str(e)}'}), 500
-
-# --- NUEVO ENDPOINT PARA CAMBIAR EL SECTOR DE UN USUARIO ---
-@app.route('/admin/users/<int:user_id>/sector', methods=['POST'])
-@permission_required('SUPERUSER')
-def set_user_sector(current_user, user_id):
-    user_to_modify = db.session.get(User, user_id)
-    if not user_to_modify:
-        return jsonify({'message': 'Usuario no encontrado'}), 404
     
-    # Un Superusuario no debería cambiar su propio sector desde aquí
-    if user_to_modify.id == current_user.id:
-        return jsonify({'message': 'No puedes modificar tu propio sector desde este panel.'}), 403
+    # Añade la validación para la nueva ubicación
+    if not data.get('titulo') or not data.get('fecha_hora') or not data.get('ubicacion_evento'):
+        return jsonify({'message': 'Título, Fecha/Hora y Ubicación son obligatorios'}), 400
 
-    data = request.get_json()
-    new_sector = data.get('sector')
+    nuevo_evento = Evento(
+        titulo=data.get('titulo'),
+        banner_image=data.get('banner_image'),
+        ubicacion_texto=data.get('ubicacion_texto'),
+        ubicacion_mapa=data.get('ubicacion_mapa'),
+        fecha_hora=parse_date(data.get('fecha_hora')),
+        detalle=data.get('detalle'),
+        ubicacion_evento=data.get('ubicacion_evento'), # <-- AÑADE ESTA LÍNEA
+        form_dinamico=data.get('form_dinamico'),
+        user_id=current_user.id
+    )
+    db.session.add(nuevo_evento)
+    db.session.commit()
+    return jsonify(nuevo_evento.to_dict()), 201
 
-    # Hacemos una validación simple. Puedes hacerla más compleja
-    # si tienes una lista fija de sectores en el backend.
-    if new_sector and isinstance(new_sector, str) and len(new_sector) < 100:
-        user_to_modify.sector = new_sector
-        db.session.commit()
-        return jsonify({'message': f'Sector de {user_to_modify.username} actualizado.'})
+@app.route('/eventos', methods=['GET'])
+@token_required
+def get_eventos(current_user):
+    now = datetime.now(timezone.utc)
+    
+    # --- LÓGICA DE FILTRADO MEJORADA ---
+    
+    # El Superusuario siempre ve todos los eventos futuros
+    if current_user.role == UserRole.SUPERUSER:
+        eventos = Evento.query.filter(
+            Evento.fecha_hora >= now
+        ).order_by(Evento.fecha_hora.asc()).all()
     else:
-        return jsonify({'message': 'El sector proporcionado es inválido.'}), 400
+        # Los demás usuarios ven los eventos de su sucursal O los eventos globales
+        eventos = Evento.query.filter(
+            Evento.fecha_hora >= now,
+            or_(
+                Evento.ubicacion_evento == current_user.sucursal, # Condición 1: Coincide con mi sucursal
+                Evento.ubicacion_evento == 'Julia Tours'          # Condición 2: Es un evento global
+            )
+        ).order_by(Evento.fecha_hora.asc()).all()
+        
+    return jsonify([evento.to_dict() for evento in eventos])
+
+
+@app.route('/eventos/<int:evento_id>', methods=['GET', 'PUT', 'DELETE'])
+@token_required
+def handle_single_evento(current_user, evento_id):
+    evento = db.session.get(Evento, evento_id)
+    if not evento:
+        return jsonify({'message': 'Evento no encontrado'}), 404
+
+    # --- MÉTODO GET ---
+    if request.method == 'GET':
+        return jsonify(evento.to_dict())
+
+    # --- MÉTODOS PUT y DELETE (solo para admins) ---
+    if not (current_user.role == UserRole.SUPERUSER or current_user.role == UserRole.EDITOR):
+        return jsonify({'message': 'Permiso denegado'}), 403
+
+    if request.method == 'PUT':
+        data = request.get_json()
+        evento.titulo = data.get('titulo', evento.titulo)
+        evento.ubicacion_evento = data.get('ubicacion_evento', evento.ubicacion_evento)
+        evento.banner_image = data.get('banner_image', evento.banner_image)
+        evento.ubicacion_texto = data.get('ubicacion_texto', evento.ubicacion_texto)
+        evento.ubicacion_mapa = data.get('ubicacion_mapa', evento.ubicacion_mapa)
+        if data.get('fecha_hora'):
+            evento.fecha_hora = parse_date(data.get('fecha_hora'))
+        evento.detalle = data.get('detalle', evento.detalle)
+        evento.form_dinamico = data.get('form_dinamico', evento.form_dinamico)
+        
+        db.session.commit()
+        return jsonify(evento.to_dict()), 200
+
+    # --- MÉTODO DELETE: Eliminar el evento ---
+    if request.method == 'DELETE':
+        try:
+            # Opcional pero recomendado: eliminar el banner del disco si existe
+            if evento.banner_image:
+                image_path = os.path.join(app.config['UPLOAD_FOLDER'], evento.banner_image)
+                if os.path.exists(image_path):
+                    os.remove(image_path)
+            
+            db.session.delete(evento)
+            db.session.commit()
+            return jsonify({'message': 'Evento eliminado correctamente'}), 200
+        except Exception as e:
+            db.session.rollback()
+            return jsonify({'message': f'Error al eliminar el evento: {str(e)}'}), 500
+
+@app.route('/eventos/<int:evento_id>/inscribir', methods=['POST'])
+@token_required
+def inscribir_evento(current_user, evento_id):
+    inscripcion = Inscripcion.query.filter_by(user_id=current_user.id, evento_id=evento_id).first()
+    if not inscripcion: inscripcion = Inscripcion(user_id=current_user.id, evento_id=evento_id)
+    data = request.get_json()
+    inscripcion.participa, inscripcion.detalles_usuario, inscripcion.respuestas_dinamicas = data.get('participa', False), data.get('detalles_usuario'), data.get('respuestas_dinamicas')
+    db.session.add(inscripcion)
+    db.session.commit()
+    return jsonify(inscripcion.to_dict())
+
+@app.route('/eventos/<int:evento_id>/mi-inscripcion', methods=['GET'])
+@token_required
+def get_mi_inscripcion(current_user, evento_id):
+    inscripcion = Inscripcion.query.filter_by(user_id=current_user.id, evento_id=evento_id).first()
+    if not inscripcion: return jsonify(None), 200
+    return jsonify(inscripcion.to_dict())
+
+@app.route('/eventos/<int:evento_id>/inscripciones', methods=['GET'])
+@permission_required('EDITOR', 'SUPERUSER')
+def get_inscripciones_evento(current_user, evento_id):
+    evento = db.session.get(Evento, evento_id)
+    if not evento: return jsonify({'message': 'Evento no encontrado'}), 404
+    inscripciones = evento.inscripciones.all()
+    return jsonify([insc.to_dict() for insc in inscripciones])
+
 
 if __name__ == '__main__':
     with app.app_context():

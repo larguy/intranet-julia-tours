@@ -24,6 +24,10 @@ import InformacionPorSector from './components/intranet/InformacionPorSector';
 import AdminPanel from './components/intranet/admin/AdminPanel';
 import EditPost from './components/intranet/EditPost';
 
+import Eventos from './components/intranet/Eventos';
+import EventoDetalle from './components/intranet/EventoDetalle';
+import CrearEvento from './components/intranet/CrearEvento';
+
 
 const AppRoutes = () => {
     const location = useLocation();
@@ -59,6 +63,10 @@ const AppRoutes = () => {
                         element={<InformacionPorSector key={location.pathname} />} 
                     />
                     <Route path="informacion/edit/:postId" element={<EditPost />} />
+                     <Route path="eventos" element={<Eventos />} />
+                    <Route path="eventos/crear" element={<CrearEvento />} />
+                    <Route path="eventos/editar/:eventoId" element={<CrearEvento modoEdicion={true} />} />
+                    <Route path="eventos/:eventoId" element={<EventoDetalle />} />
                     <Route path="admin" element={<AdminPanel />} />
                 </Route>
             </Route>
@@ -88,6 +96,7 @@ function App() {
                                 <li><NavLink to="/index/cumpleanos">Cumpleaños</NavLink></li>
                                 <li><NavLink to="/index/buscador-personal">Buscador</NavLink></li>
                                 <li><NavLink to="/index/calendario-reuniones">Calendario</NavLink></li>
+                                <li><NavLink to="/index/eventos">Eventos</NavLink></li>
                                 {user && user.role === 'SUPERUSER' && (
                                     <li><NavLink to="/index/admin">Admin</NavLink></li>
                                 )}

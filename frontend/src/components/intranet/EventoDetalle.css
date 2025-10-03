@@ -1,0 +1,217 @@
+.evento-detalle-container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.evento-detalle-banner {
+    width: 100%;
+    max-height: 300px;
+    object-fit: cover;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.evento-detalle-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.evento-info {
+    background-color: #f9f9f9;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 30px;
+}
+
+.evento-info p {
+    margin: 5px 0;
+}
+
+.evento-detalle-descripcion {
+    margin-top: 15px;
+    font-style: italic;
+}
+
+.inscripcion-form {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.participa-options {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+.participa-options label {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.form-dinamico-respuestas {
+    display: flex;
+    flex-direction: column;
+    justify-items: center;
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid #eee;
+}
+
+.form-dinamico-respuestas .form-group {
+    
+    margin-bottom: 15px;
+}
+
+.participantes-lista {
+    margin-top: 40px;
+    padding: 20px;
+    background-color: #f1f3f5;
+    border-radius: 8px;
+}
+
+.participantes-lista ul {
+    list-style: none;
+    padding: 0;
+}
+
+.participantes-lista li {
+    padding: 10px;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.participantes-lista li:last-child {
+    border-bottom: none;
+}
+
+
+.evento-actions { display: flex; gap: 10px; }
+.btn-danger { background-color: #dc3545; color: white; }
+.btn-danger:hover { background-color: #c82333; }
+
+
+    .inscripciones-container {
+        margin-top: 40px;
+        padding-top: 20px;
+        border-top: 1px solid #eee;
+    }
+
+    .participantes-lista, .no-participan-lista {
+        margin-bottom: 30px;
+    }
+
+    .participantes-lista h3, .no-participan-lista h3 {
+        border-bottom: 2px solid #ddd;
+        padding-bottom: 10px;
+        margin-bottom: 15px;
+    }
+
+    .participantes-lista ul, .no-participan-lista ul {
+        list-style: none;
+        padding: 0;
+    }
+
+    .participantes-lista li, .no-participan-lista li {
+        padding: 15px;
+        border-bottom: 1px solid #e9ecef;
+        background-color: #fff;
+    }
+
+    .participantes-lista li:nth-child(even), .no-participan-lista li:nth-child(even) {
+        background-color: #f8f9fa;
+    }
+
+    .participantes-lista li:last-child, .no-participan-lista li:last-child {
+        border-bottom: none;
+    }
+
+    .detalle-usuario {
+        margin: 5px 0 0;
+        font-size: 0.9em;
+        color: #6c757d;
+    }
+
+    .respuestas-dinamicas {
+        margin-top: 10px;
+        padding-top: 10px;
+        border-top: 1px dashed #ccc;
+        font-size: 0.9em;
+    }
+
+    .respuestas-dinamicas p {
+        margin: 4px 0;
+    }
+
+    .volver-container {
+    margin-bottom: 20px;
+}
+
+.btn-volver {
+    font-weight: bold;
+    color: #6c757d;
+    text-decoration: none;
+    display: inline-block;
+    transition: color 0.2s;
+}
+
+.btn-volver:hover {
+    color: #343a40;
+}
+
+
+
+.inscripcion-form {
+    background-color: #fff;
+    padding: 30px; 
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    text-align: center;
+    margin-top: 30px;
+}
+
+.participa-options {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 20px;
+    justify-content: center; 
+}
+
+.form-dinamico-respuestas {
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid #eee;
+    text-align: left; 
+}
+
+.form-dinamico-respuestas .form-group {
+    max-width: 400px; 
+    margin-left: auto;
+    margin-right: auto;
+}
+
+
+.btn-danger, .btn-secondary, .btn-primary {
+    padding: 8px 16px;
+    border-radius: 5px;
+    text-decoration: none; 
+    border: 1px solid transparent;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.btn-secondary {
+    background-color: #727b83;
+    border-color: #6c757d;
+    color: white;
+}
+.btn-danger {
+    background-color: #dc3545;
+    border-color: #dc3545;
+    color: white;
+}
