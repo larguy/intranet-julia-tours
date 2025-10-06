@@ -269,3 +269,14 @@ class Inscripcion(db.Model):
             'respuestas_dinamicas': self.respuestas_dinamicas,
             'usuario': { 'nombre': self.usuario.nombre, 'apellido': self.usuario.apellido } if self.usuario else None
         }
+    
+# Al final de models.py
+
+class CumpleGif(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    fecha = db.Column(db.Date, nullable=False)
+    gif_url = db.Column(db.String(500), nullable=False)
+
+    # Hacemos que la combinación de usuario y fecha sea única
+    __table_args__ = (db.UniqueConstraint('user_id', 'fecha', name='_user_fecha_uc'),)

@@ -3,6 +3,7 @@ import re
 import random
 import secrets
 import jwt
+import requests
 from functools import wraps
 from datetime import datetime, timedelta, timezone, date, time
 
@@ -15,8 +16,9 @@ from sqlalchemy.exc import IntegrityError
 from werkzeug.utils import secure_filename
 from dateutil.parser import parse as parse_date
 
+
 from config import Config
-from models import db, User, UserRole, Post, Novedad, AgendaContact, Attachment, Reunion, GuardiaFecha, Evento, Inscripcion
+from models import db, User, UserRole, Post, Novedad, AgendaContact, Attachment, Reunion, GuardiaFecha, Evento, Inscripcion, CumpleGif 
 
 app = Flask(__name__)
 app.config.from_object(Config)
@@ -508,20 +510,36 @@ def create_reunion(current_user):
 @permission_required('EDITOR', 'SUPERUSER')
 def handle_single_reunion(current_user, reunion_id):
     reunion = db.session.get(Reunion, reunion_id)
-    if not reunion: return jsonify({'message': 'Reunión no encontrada'}), 404
+    if not reunion:
+        return jsonify({'message': 'Reunión no encontrada'}), 404
+
+    # --- MÉTODO PUT: Actualizar la reunión ---
     if request.method == 'PUT':
         data = request.get_json()
         try:
-            for key, value in data.items():
-                if key in ['start', 'end']:
-                    setattr(reunion, f"{key}_time", parse_date(value))
-                else:
-                    setattr(reunion, key, value)
+            # Actualizamos explícitamente solo los campos que nos interesan
+            reunion.tema = data.get('tema', reunion.tema)
+            if data.get('start'):
+                reunion.start_time = parse_date(data.get('start'))
+            if data.get('end'):
+                reunion.end_time = parse_date(data.get('end'))
+            
+            reunion.ubicacion = data.get('ubicacion', reunion.ubicacion)
+            reunion.cantidad_personas = data.get('cantidad_personas', reunion.cantidad_personas)
+            reunion.zoom_link = data.get('zoom_link', reunion.zoom_link)
+            reunion.convoca = data.get('convoca', reunion.convoca)
+            reunion.proveedor = data.get('proveedor', reunion.proveedor)
+            reunion.necesita_bebida = data.get('necesita_bebida', reunion.necesita_bebida)
+            reunion.necesita_comida = data.get('necesita_comida', reunion.necesita_comida)
+            
             db.session.commit()
             return jsonify(reunion.to_dict())
         except Exception as e:
             db.session.rollback()
+            print(f"Error al actualizar reunión: {e}") # Imprime el error real en la consola del backend
             return jsonify({'message': f'Error en el servidor: {str(e)}'}), 500
+
+    # --- MÉTODO DELETE: Eliminar la reunión ---
     if request.method == 'DELETE':
         db.session.delete(reunion)
         db.session.commit()
@@ -703,6 +721,87 @@ def get_inscripciones_evento(current_user, evento_id):
     inscripciones = evento.inscripciones.all()
     return jsonify([insc.to_dict() for insc in inscripciones])
 
+@app.route('/cumpleanos', methods=['GET'])
+@token_required
+def get_cumpleanos(current_user):
+    today = datetime.now().date()
+    
+    # 1. Buscamos a los cumpleañeros de hoy
+    cumpleaneros = User.query.filter(
+        func.extract('month', User.fecha_nacimiento) == today.month,
+        func.extract('day', User.fecha_nacimiento) == today.day
+    ).all()
+
+    results = []
+    for user in cumpleaneros:
+        # 2. Para cada cumpleañero, buscamos si ya tiene un GIF asignado para hoy
+        gif_asignado = CumpleGif.query.filter_by(user_id=user.id, fecha=today).first()
+
+        if not gif_asignado:
+            # Si NO tiene GIF, le asignamos uno aleatorio
+            try:
+                giphy_url = f"https://api.giphy.com/v1/gifs/search?api_key=9OgBGuwBfcLyAMuxeKkqNFQMelskBRVN&q=happy+birthday+funny&limit=50&rating=g"
+                response = requests.get(giphy_url)
+                response.raise_for_status() # Lanza un error si la petición falla (ej. 4xx o 5xx)
+                
+                gifs = response.json().get('data', [])
+                if gifs:
+                    random_gif = random.choice(gifs)
+                    gif_url = random_gif['images']['original']['url']
+                    
+                    # Guardamos el GIF en nuestra base de datos
+                    nuevo_gif = CumpleGif(user_id=user.id, fecha=today, gif_url=gif_url)
+                    db.session.add(nuevo_gif)
+                    db.session.commit()
+                    gif_asignado = nuevo_gif
+            except Exception as e:
+                print(f"Error al obtener GIF de Giphy: {e}")
+                gif_asignado = None # En caso de error, no habrá GIF
+
+        results.append({
+            'id': user.id,
+            'nombre': user.nombre,
+            'apellido': user.apellido,
+            'sector': user.sector,
+            'profile_image': user.profile_image,
+            'gif_url': gif_asignado.gif_url if gif_asignado else None
+        })
+        
+    return jsonify(results)
+
+# Endpoint para cambiar el GIF de un usuario
+@app.route('/cumpleanos/<int:user_id>/change-gif', methods=['POST'])
+@token_required
+def change_cumple_gif(current_user, user_id):
+    today = datetime.now().date()
+    
+    # Permiso: Solo el propio cumpleañero o un superusuario pueden cambiar el GIF
+    if not (current_user.id == user_id or current_user.role == UserRole.SUPERUSER):
+        return jsonify({'message': 'Permiso denegado'}), 403
+
+    gif_a_cambiar = CumpleGif.query.filter_by(user_id=user_id, fecha=today).first()
+    if not gif_a_cambiar:
+        return jsonify({'message': 'No hay un GIF asignado para este usuario hoy'}), 404
+
+    # Obtenemos un nuevo GIF aleatorio de Giphy
+    try:
+        giphy_url = f"https://api.giphy.com/v1/gifs/search?api_key=9OgBGuwBfcLyAMuxeKkqNFQMelskBRVN&q=happy+birthday+funny&limit=50&rating=g"
+        response = requests.get(giphy_url)
+        response.raise_for_status()
+        
+        gifs = response.json().get('data', [])
+        if gifs:
+            new_gif_url = random.choice(gifs)['images']['original']['url']
+            
+            # Actualizamos la URL en la base de datos
+            gif_a_cambiar.gif_url = new_gif_url
+            db.session.commit()
+            
+            return jsonify({'message': 'GIF actualizado', 'new_gif_url': new_gif_url}), 200
+        else:
+            return jsonify({'message': 'No se pudieron obtener nuevos GIFs de Giphy'}), 500
+    except Exception as e:
+        return jsonify({'message': f'Error al contactar con Giphy: {str(e)}'}), 500
 
 if __name__ == '__main__':
     with app.app_context():

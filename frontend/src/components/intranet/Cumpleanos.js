@@ -1,5 +1,7 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import axios from 'axios';
+
+import React, { useState, useEffect, useMemo } from 'react';
+import apiClient from '../../api'; 
+import { useAuth } from '../../context/AuthContext';
 import DatePicker from 'react-datepicker';
 import "react-datepicker/dist/react-datepicker.css";
 import './Cumpleanos.css';
@@ -15,62 +17,29 @@ const areDatesSameDayAndMonth = (date1, date2) => {
     return date1.getUTCDate() === date2.getUTCDate() && date1.getUTCMonth() === date2.getUTCMonth();
 };
 
+
 const Cumpleanos = () => {
+    const { user: currentUser, token } = useAuth();
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState('');
+
+    const [cumpleanerosDeHoy, setCumpleanerosDeHoy] = useState([]);
+
     const [isCalendarVisible, setIsCalendarVisible] = useState(false);
     const [allUsers, setAllUsers] = useState([]);
     const [selectedDate, setSelectedDate] = useState(new Date());
-    const [birthdaysOnSelectedDate, setBirthdaysOnSelectedDate] = useState([]);
-    const [upcomingBirthdays, setUpcomingBirthdays] = useState([]);
-    const [gifs, setGifs] = useState([]);
-    const [isLoading, setIsLoading] = useState(true);
+    
+    const birthdaysOnSelectedDate = useMemo(() => 
+        allUsers.filter(user => areDatesSameDayAndMonth(parseDateWithoutTimezone(user.fecha_nacimiento), selectedDate)),
+        [allUsers, selectedDate]
+    );
 
-    const isTodaySelected = areDatesSameDayAndMonth(selectedDate, new Date());
-    const areBirthdaysToday = isTodaySelected && birthdaysOnSelectedDate.length > 0;
-
-    useEffect(() => {
-        const fetchAllUsers = async () => {
-            const token = localStorage.getItem('token');
-            try {
-                const response = await axios.get(`${process.env.REACT_APP_API_URL}/internos`, {
-                    headers: { 'x-access-token': token }
-                });
-                setAllUsers(response.data);
-            } catch (error) {
-                console.error("Error al cargar los usuarios:", error);
-            } finally {
-                setIsLoading(false);
-            }
-        };
-        fetchAllUsers();
-    }, []);
-
-    const fetchGifs = useCallback(async () => {
-        try {
-            const giphyApiKey = process.env.REACT_APP_GIPHY_API_KEY;
-            const response = await axios.get(`https://api.giphy.com/v1/gifs/search`, {
-                params: { api_key: giphyApiKey, q: 'happy birthday funny', limit: 25, rating: 'g' }
-            });
-            const gifUrls = response.data.data.map(gif => gif.images.fixed_height.url);
-            setGifs(gifUrls);
-        } catch (error) {
-            console.error("Error al cargar GIFs de GIPHY:", error);
-        }
-    }, []);
-
-    useEffect(() => {
-        if (allUsers.length === 0) return;
-
-        const selectedDateBirthdays = allUsers.filter(user => 
-            areDatesSameDayAndMonth(parseDateWithoutTimezone(user.fecha_nacimiento), selectedDate)
-        );
-        setBirthdaysOnSelectedDate(selectedDateBirthdays);
-
+    const upcomingBirthdays = useMemo(() => {
         const today = new Date();
         const upcoming = [];
         for (let i = 1; i <= 7; i++) {
             const futureDate = new Date();
             futureDate.setDate(today.getDate() + i);
-            
             allUsers.forEach(user => {
                 if (areDatesSameDayAndMonth(parseDateWithoutTimezone(user.fecha_nacimiento), futureDate)) {
                     upcoming.push({ ...user, birthdayDate: futureDate });
@@ -78,47 +47,79 @@ const Cumpleanos = () => {
             });
         }
         upcoming.sort((a, b) => a.birthdayDate - b.birthdayDate);
-        setUpcomingBirthdays(upcoming);
+        return upcoming;
+    }, [allUsers]);
 
-        if (selectedDateBirthdays.length > 0 && gifs.length === 0) {
-            fetchGifs();
+
+    useEffect(() => {
+        const fetchData = async () => {
+            if (token) {
+                setIsLoading(true);
+                try {
+                    const usersRes = await apiClient.get('/internos', { headers: { 'x-access-token': token } });
+                    setAllUsers(usersRes.data);
+
+                    const cumpleHoyRes = await apiClient.get('/cumpleanos', { headers: { 'x-access-token': token } });
+                    setCumpleanerosDeHoy(cumpleHoyRes.data);
+
+                } catch (err) {
+                    setError('No se pudo cargar toda la información de cumpleaños.');
+                } finally {
+                    setIsLoading(false);
+                }
+            }
+        };
+        fetchData();
+    }, [token]);
+
+    const handleChangeGif = async (userId) => {
+        try {
+            const response = await apiClient.post(`/cumpleanos/${userId}/change-gif`, {}, { headers: { 'x-access-token': token } });
+            setCumpleanerosDeHoy(prev => prev.map(c => 
+                c.id === userId ? { ...c, gif_url: response.data.new_gif_url } : c
+            ));
+        } catch (err) {
+            console.error("Error al cambiar el GIF:", err);
+            setError('No se pudo cambiar el GIF. Inténtalo de nuevo.');
         }
-    }, [selectedDate, allUsers, gifs.length, fetchGifs]);
-
-    const getRandomGif = () => {
-        if (gifs.length === 0) return '';
-        return gifs[Math.floor(Math.random() * gifs.length)];
     };
-    
+
+    const isTodaySelected = areDatesSameDayAndMonth(selectedDate, new Date());
+
     if (isLoading) return <p>Cargando información de cumpleaños...</p>;
+    if (error) return <p className="error-message">{error}</p>;
 
     return (
         <div className="cumpleanos-page-container">
             <h1>
-                {areBirthdaysToday ? "¡Feliz Cumpleaños!" : "Hoy no hay Cumpleaños"}
+                {cumpleanerosDeHoy.length > 0 ? "¡Feliz Cumpleaños!" : "Hoy no hay Cumpleaños"}
             </h1>
             
-            <div className="daily-results-section">
-                <h3>
-                    {isTodaySelected ? "" : `Cumpleaños del ${selectedDate.toLocaleDateString('es-ES', { day: 'numeric', month: 'long' })}`}
-                </h3>
-                {birthdaysOnSelectedDate.length > 0 ? (
-                    <div className="birthday-container">
-                        {birthdaysOnSelectedDate.map(person => (
-                            <div key={person.id} className="birthday-card">
-                                <h2>{person.nombre} {person.apellido}</h2>
-                                <img src={getRandomGif()} alt="Happy Birthday GIF" className="birthday-gif" />
-                            </div>
-                        ))}
-                    </div>
-                ) : (
-                    !isTodaySelected && <p>No hay cumpleaños en la fecha seleccionada.</p>
-                )}
-            </div>
+            {cumpleanerosDeHoy.length > 0 && (
+                <div className="birthday-container today">
+                    {cumpleanerosDeHoy.map(cumpleanero => (
+                        <div key={cumpleanero.id} className="cumpleanero-card">
+                            <img src={`${process.env.REACT_APP_API_URL}/uploads/${cumpleanero.profile_image}`} alt={cumpleanero.nombre} className="profile-pic-cumple" />
+                            <h3>{cumpleanero.nombre} {cumpleanero.apellido}</h3>
+                            <p>{cumpleanero.sector}</p>
+                            {cumpleanero.gif_url && (
+                                <div className="gif-container">
+                                    <img src={cumpleanero.gif_url} alt="Happy Birthday GIF" className="birthday-gif" />
+                                </div>
+                            )}
+                            {(currentUser.id === cumpleanero.id || currentUser.role === 'SUPERUSER') && (
+                                <button onClick={() => handleChangeGif(cumpleanero.id)} className="change-gif-btn">
+                                    Cambiar GIF
+                                </button>
+                            )}
+                        </div>
+                    ))}
+                </div>
+            )}
 
             <div className="calendar-search-container">
                 <button className="toggle-calendar-btn" onClick={() => setIsCalendarVisible(!isCalendarVisible)}>
-                    {isCalendarVisible ? 'Ocultar Calendario' : 'Buscar por fecha'}
+                    {isCalendarVisible ? 'Ocultar Calendario' : 'Buscar cumpleaños por fecha'}
                 </button>
                 {isCalendarVisible && (
                     <div className="calendar-wrapper">
@@ -126,7 +127,28 @@ const Cumpleanos = () => {
                     </div>
                 )}
             </div>
-
+            
+            {!isTodaySelected && (
+                 <div className="daily-results-section">
+                    <h3>
+                        {`Cumpleaños del ${selectedDate.toLocaleDateString('es-ES', { day: 'numeric', month: 'long' })}`}
+                    </h3>
+                    {birthdaysOnSelectedDate.length > 0 ? (
+                        <div className="birthday-container">
+                            {birthdaysOnSelectedDate.map(person => (
+                                <div key={person.id} className="birthday-card simple">
+                                    <img src={`${process.env.REACT_APP_API_URL}/uploads/${person.profile_image}`} alt={person.nombre} className="profile-pic-cumple" />
+                                    <h2>{person.nombre} {person.apellido}</h2>
+                                    <p>{person.sector}</p>
+                                </div>
+                            ))}
+                        </div>
+                    ) : (
+                        <p>No hay cumpleaños en la fecha seleccionada.</p>
+                    )}
+                </div>
+            )}
+            
             <div className="upcoming-birthdays">
                 <h3>Próximos Cumpleaños</h3>
                 {upcomingBirthdays.length > 0 ? (
