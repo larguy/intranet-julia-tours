@@ -45,6 +45,7 @@ class Novedad(db.Model):
     created_at = db.Column(db.DateTime(timezone=True), server_default=func.now())
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     author = db.relationship('User')
+    attachments = db.relationship('Attachment', backref='novedad', lazy=True, cascade="all, delete-orphan")
 
     def to_dict(self):
         author_info = {'id': None, 'nombre': 'Usuario', 'apellido': 'Eliminado', 'profile_image': 'default.png'}
@@ -61,7 +62,8 @@ class Novedad(db.Model):
             'asunto': self.asunto,
             'content': self.content,
             'created_at': self.created_at.isoformat(),
-            'author': author_info
+            'author': author_info,
+            'attachments': [att.to_dict() for att in self.attachments]
         }
 
 class Attachment(db.Model):
@@ -72,9 +74,10 @@ class Attachment(db.Model):
     saved_filename = db.Column(db.String(255), nullable=False, unique=True)
     # Tipo de archivo (ej: 'image/jpeg', 'application/pdf') para mostrar iconos
     mimetype = db.Column(db.String(100), nullable=False)
-    
     # El ID del post al que pertenece este adjunto
-    post_id = db.Column(db.Integer, db.ForeignKey('post.id'), nullable=False)
+    post_id = db.Column(db.Integer, db.ForeignKey('post.id'), nullable=True) 
+    
+    novedad_id = db.Column(db.Integer, db.ForeignKey('novedad.id'), nullable=True)
 
     def to_dict(self):
         return {
@@ -274,7 +277,7 @@ class Inscripcion(db.Model):
 
 class CumpleGif(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id', ondelete='CASCADE'), nullable=False)
     fecha = db.Column(db.Date, nullable=False)
     gif_url = db.Column(db.String(500), nullable=False)
 

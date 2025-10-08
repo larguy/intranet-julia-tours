@@ -1,9 +1,10 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import apiClient from '../../api';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import apiClient from '../../api'; // Asegúrate de que la importación esté aquí
 import { useAuth } from '../../context/AuthContext';
 import Editor from '../Editor';
 import DOMPurify from 'dompurify';
 import './Novedades.css';
+import './PostStyles.css';
 
 const getAttachmentIcon = (filename) => {
     const extension = filename.split('.').pop().toLowerCase();
@@ -31,33 +32,31 @@ const getAttachmentIcon = (filename) => {
 const Novedades = () => {
     const { user, token } = useAuth();
     
-    const [novedades, setNovedades] = useState([]);
+    const [allNovedades, setAllNovedades] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
-    const [totalPages, setTotalPages] = useState(0);
+    const [searchTerm, setSearchTerm] = useState('');
     const [asunto, setAsunto] = useState('');
-    const [content, setContent] = useState(''); 
+    const [content, setContent] = useState('');
     const [selectedTemplate, setSelectedTemplate] = useState('');
     const [attachments, setAttachments] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState('');
 
     const templates = {
-        vacaciones: '<table style="height: 139px;" width="389"><tbody><tr><td style="width: 379px;"><div><div style="text-align: center;"><p><strong>Leandro Ramos</strong> ingresa en vacaciones</p><p><strong>Desde:</strong> 03/03/2026 - <strong>Hasta:</strong> 18/03/2026</p>&nbsp; &nbsp;</div></div></td></tr></tbody></table>',
-        licencia: '<p>[Nombre]</p><p><strong>Cantidad de días:</strong> [Completar]</p><p><strong>Desde:</strong> [dd/mm/aaaa] - <strong>Hasta:</strong> [dd/mm/aaaa]</p>',
-        ausente: '<p>[Nombre]</p><p><strong>Fecha:</strong> [dd/mm/aaaa]</p>',
-        permiso: '<p>[Nombre]</p><p><strong>Detalle:</strong> [Ingresa después / Se retira antes]</p>',
-        importante: '<p>[Escribir aquí el comunicado...]</p>'
+        vacaciones: '<strong>Personal en Vacaciones:</strong><p><strong>Usuario:</strong> [Completar nombre]</p><p><strong>Cantidad de días:</strong> [Completar]</p><p><strong>Desde:</strong> [dd/mm/aaaa] - <strong>Hasta:</strong> [dd/mm/aaaa]</p>',
+        licencia: '<strong>Personal en Licencia:</strong><p><strong>Usuario:</strong> [Completar nombre]</p><p><strong>Cantidad de días:</strong> [Completar]</p><p><strong>Desde:</strong> [dd/mm/aaaa] - <strong>Hasta:</strong> [dd/mm/aaaa]</p>',
+        ausente: '<strong>Personal Ausente:</strong><p><strong>Usuario:</strong> [Completar nombre]</p><p><strong>Fecha:</strong> [dd/mm/aaaa]</p>',
+        permiso: '<strong>Personal con Permiso:</strong><p><strong>Usuario:</strong> [Completar nombre]</p><p><strong>Detalle:</strong> [Ingresa después / Se retira antes]</p>',
+        importante: '<h2><strong>Información Importante</strong></h2><p>[Escribir aquí el comunicado...]</p>'
     };
-    
-    const fetchNovedades = useCallback(async (page = 1) => {
+
+    const fetchNovedades = useCallback(async () => {
         setIsLoading(true);
         try {
-            const response = await apiClient.get(`${process.env.REACT_APP_API_URL}/novedades?page=${page}`, {
+            const response = await apiClient.get('/novedades/all', {
                 headers: { 'x-access-token': token }
             });
-            setNovedades(response.data.novedades);
-            setCurrentPage(response.data.current_page);
-            setTotalPages(response.data.total_pages);
+            setAllNovedades(response.data);
         } catch (err) {
             setError('No se pudieron cargar las novedades.');
         } finally {
@@ -66,11 +65,26 @@ const Novedades = () => {
     }, [token]);
 
     useEffect(() => {
-        if (token) fetchNovedades(currentPage);
-    }, [token, currentPage, fetchNovedades]);
+        if (token) fetchNovedades();
+    }, [token, fetchNovedades]);
 
-    const canPost = user?.role === 'SUPERUSER' || (user?.role === 'EDITOR' && user.sector === 'Administracion');
+    const { paginatedNovedades, totalPages } = useMemo(() => {
+        const term = searchTerm.toLowerCase();
+        const filtered = allNovedades.filter(novedad => 
+            (novedad.asunto.toLowerCase().includes(term)) ||
+            (novedad.content.replace(/<[^>]*>/g, '').toLowerCase().includes(term))
+        );
+        const itemsPerPage = 10;
+        const total = Math.ceil(filtered.length / itemsPerPage);
+        const indexOfLastPost = currentPage * itemsPerPage;
+        const indexOfFirstPost = indexOfLastPost - itemsPerPage;
+        const currentPosts = filtered.slice(indexOfFirstPost, indexOfLastPost);
+        return { paginatedNovedades: currentPosts, totalPages: total };
+    }, [searchTerm, allNovedades, currentPage]);
 
+    const canPost = user?.role === 'SUPERUSER' || user?.role === 'EDITOR';
+
+    // --- FUNCIONES AÑADIDAS ---
     const handleFileSelect = async (event) => {
         const files = event.target.files;
         if (!files || files.length === 0) return;
@@ -78,10 +92,10 @@ const Novedades = () => {
         const formData = new FormData();
         formData.append('upload', file);
         try {
-            const response = await apiClient.post(`${process.env.REACT_APP_API_URL}/upload-file`, formData, {
+            const response = await apiClient.post('/upload-file', formData, {
                 headers: { 'x-access-token': token }
             });
-            setAttachments(prev => [...prev, { name: file.name, url: response.data.url }]);
+            setAttachments(prev => [...prev, response.data]);
         } catch (err) {
             setError('Error al subir el archivo adjunto.');
         }
@@ -89,16 +103,14 @@ const Novedades = () => {
 
     const removeAttachment = (urlToRemove) => {
         setAttachments(attachments.filter(att => att.url !== urlToRemove));
-        };
-            
-        const handleTemplateChange = (e) => {
+    };
+        
+    const handleTemplateChange = (e) => {
         const templateKey = e.target.value;
         setSelectedTemplate(templateKey);
-
         if (templateKey) {
             const selectedIndex = e.target.selectedIndex;
             const selectedText = e.target.options[selectedIndex].text;
-
             setAsunto(selectedText);
             setContent(templates[templateKey]);
         } else {
@@ -109,7 +121,7 @@ const Novedades = () => {
 
     const handleCreateNovedad = async (e) => {
         e.preventDefault();
-        setError(''); 
+        setError('');
         const cleanContent = content.replace(/<p><br><\/p>/g, '').trim();
         if (!asunto.trim() && !cleanContent && attachments.length === 0) {
             setError('El asunto, contenido o adjuntos no pueden estar vacíos.');
@@ -117,10 +129,11 @@ const Novedades = () => {
         }
 
         try {
-            await apiClient.post(`${process.env.REACT_APP_API_URL}/novedades`, 
+            await apiClient.post('/novedades', 
                 { 
-                    asunto: asunto, 
-                    content: content 
+                    asunto, 
+                    content,
+                    attachments // Enviamos la lista de adjuntos
                 }, 
                 { headers: { 'x-access-token': token } }
             );
@@ -128,8 +141,8 @@ const Novedades = () => {
             setAsunto('');
             setContent('');
             setAttachments([]);
-            setSelectedTemplate(''); 
-            fetchNovedades(1);
+            setSelectedTemplate('');
+            fetchNovedades();
         } catch (err) {
             setError(err.response?.data?.message || 'Error al crear la novedad.');
         }
@@ -138,15 +151,15 @@ const Novedades = () => {
     const handleDeleteNovedad = async (novedadId) => {
         if (window.confirm('¿Estás seguro?')) {
             try {
-                await apiClient.delete(`${process.env.REACT_APP_API_URL}/novedades/${novedadId}`, { headers: { 'x-access-token': token } });
-                fetchNovedades(currentPage);
+                await apiClient.delete(`/novedades/${novedadId}`, { headers: { 'x-access-token': token } });
+                fetchNovedades();
             } catch (err) {
                 setError(err.response?.data?.message || 'Error al eliminar la novedad.');
             }
         }
     };
 
-    if (isLoading) return <p>Cargando novedades...</p>;
+    if (isLoading && allNovedades.length === 0) return <p>Cargando novedades...</p>;
 
     return (
         <div>
@@ -155,36 +168,71 @@ const Novedades = () => {
 
             
 
+            <div className="search-bar">
+                <input
+                    type="text"
+                    placeholder="Buscar por asunto o contenido..."
+                    value={searchTerm}
+                    onChange={(e) => {
+                        setSearchTerm(e.target.value);
+                        setCurrentPage(1);
+                    }}
+                />
+            </div>
+
             <div className="posts-container">
-                {novedades.map(novedad => (
-                    <div key={novedad.id} className="post-card novelty-card">
-                        {(user?.role === 'SUPERUSER' || user?.id === novedad.author.id) && (
-                            <button onClick={() => handleDeleteNovedad(novedad.id)} className="delete-post-btn">&times;</button>
-                        )}
-                        <div className="novelty-header">
-                            <h3 className="novelty-asunto">{novedad.asunto}</h3>
-                            <span className="novelty-date">
-                                {new Date(novedad.created_at).toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' })}
-                            </span>
+                {paginatedNovedades.length > 0 ? (
+                    paginatedNovedades.map(novedad => (
+                        <div key={novedad.id} className="post-card novelty-card">
+                            {(user?.role === 'SUPERUSER' || user?.id === novedad.author.id) && (
+                                <button onClick={() => handleDeleteNovedad(novedad.id)} className="delete-post-btn">&times;</button>
+                            )}
+                            <div className="novelty-header">
+                                <h3 className="novelty-asunto">{novedad.asunto}</h3>
+                                <span className="novelty-date">
+                                    {new Date(novedad.created_at).toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' })}
+                                </span>
+                            </div>
+                            <div 
+                                className="post-content ck-content"
+                                dangerouslySetInnerHTML={{ 
+                                    __html: DOMPurify.sanitize(novedad.content, {
+                                        ADD_TAGS: ['iframe'],
+                                        ADD_ATTR: ['class', 'style', 'target'] 
+                                    }) 
+                                }}
+                            />
+                            {novedad.attachments && novedad.attachments.length > 0 && (
+                                <div className="post-attachments-display">
+                                    <h4>Archivos Adjuntos:</h4>
+                                    <ul className="attachment-display-list">
+                                        {novedad.attachments.map(att => {
+                                            // Obtenemos el icono y la clase para el archivo
+                                            const { icon, className } = getAttachmentIcon(att.original_filename);
+                                            return (
+                                                <li key={att.id} className={className}>
+                                                    <a href={`${process.env.REACT_APP_API_URL}${att.url}`} target="_blank" rel="noopener noreferrer">
+                                                        {icon} {/* Renderizamos el icono de color */}
+                                                        {att.original_filename}
+                                                    </a>
+                                                </li>
+                                            );
+                                        })}
+                                    </ul>
+                                </div>
+                            )}
                         </div>
-                        <div 
-                            className="post-content ck-content"
-                            dangerouslySetInnerHTML={{ 
-                                __html: DOMPurify.sanitize(novedad.content, {
-                                    ADD_TAGS: ['iframe'],
-                                    ADD_ATTR: ['class', 'style', 'target'] 
-                                }) 
-                            }}
-                        />
-                    </div>
-                ))}
+                    ))
+                ) : (
+                    <p>No se encontraron novedades para "{searchTerm}".</p>
+                )}
             </div>
 
             {totalPages > 1 && (
                 <div className="pagination-controls">
-                    <button onClick={() => fetchNovedades(currentPage - 1)} disabled={currentPage === 1}> ‹ Anterior </button>
+                    <button onClick={() => setCurrentPage(p => p - 1)} disabled={currentPage === 1}> ‹ Anterior </button>
                     <span>Página {currentPage} de {totalPages}</span>
-                    <button onClick={() => fetchNovedades(currentPage + 1)} disabled={currentPage === totalPages}> Siguiente › </button>
+                    <button onClick={() => setCurrentPage(p => p + 1)} disabled={currentPage === totalPages}> Siguiente › </button>
                 </div>
             )}
 
@@ -209,28 +257,29 @@ const Novedades = () => {
                         data={content}
                         onChange={setContent}
                         placeholder="Escribe aquí o elige una plantilla..."
-                    />
-                     <div className="attachments-section">
-                    <label className="attachment-label">Adjuntar Documentos</label>
-                    <input type="file" onChange={handleFileSelect} className="attachment-input" key={attachments.length} />
-                    {attachments.length > 0 && (
-                        <div className="attachment-list">
-                            {attachments.map((att, index) => {
-                                const { icon, className } = getAttachmentIcon(att.name);
-                                return (
-                                    <div key={index} className={`attachment-item ${className}`}>
-                                        {icon}
-                                        <span>{att.name}</span>
-                                        <button type="button" onClick={() => removeAttachment(att.url)}>&times;</button>
-                                    </div>
-                                );
-                            })}
-                        </div>
-                    )}
-                </div>   
+                    />          
+                    <div className="attachments-section">
+                        <label className="attachment-label">Adjuntar Documentos</label>
+                        <input type="file" onChange={handleFileSelect} className="attachment-input" key={attachments.length} />
+                        {attachments.length > 0 && (
+                            <div className="attachment-list">
+                                {attachments.map((att, index) => {
+                                    const { icon, className } = getAttachmentIcon(att.name);
+                                    return (
+                                        <div key={index} className={`attachment-item ${className}`}>
+                                            {icon}
+                                            <span>{att.name}</span>
+                                            <button type="button" onClick={() => removeAttachment(att.url)}>&times;</button>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        )}
+                    </div>
                     <button type="submit" className="btn-primary">Publicar Novedad</button>
                 </form>
             )}
+            
         </div>
     );
 }; 

@@ -1,0 +1,32 @@
+
+/* --- ESTILOS PARA EL FORMULARIO DE CREACIÓN/EDICIÓN --- */
+.post-form {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 30px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+.post-form .form-group { margin-bottom: 15px; }
+.post-form .form-group label { display: block; font-weight: bold; margin-bottom: 5px; }
+.post-form input[type="text"] { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 1.1em; box-sizing: border-box; }
+
+/* --- ESTILOS PARA EL LISTADO DE POSTS --- */
+.posts-container { display: flex; flex-direction: column; gap: 20px; }
+.post-card { background-color: #fff; border-radius: 8px; padding: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); position: relative; }
+
+/* --- ESTILOS PARA EL CONTENIDO DEL POST --- */
+.post-content { line-height: 1.6; }
+.post-content p { margin: 0 0 1em 0; }
+.post-content h2, .post-content h3 { margin-top: 0; }
+.post-content img { max-width: 100%; height: auto; border-radius: 8px; margin: 10px auto; display: block; }
+.post-content hr { border: 0; border-top: 1px solid #eee; margin: 15px 0; }
+
+/* --- ESTILOS UNIFICADOS PARA LA SECCIÓN DE ADJUNTOS (EN POSTS PUBLICADOS) --- */
+.post-attachments-display { margin-top: 20px; padding-top: 15px; border-top: 1px solid #eee; }
+.post-attachments-display h4 { margin-top: 0; margin-bottom: 10px; font-size: 0.9em; color: #6c757d; font-weight: bold; }
+.attachment-display-list { list-style: none; padding: 0; margin: 0; }
+.attachment-display-list li { margin-bottom: 8px; }
+.attachment-display-list a { display: inline-flex; align-items: center; gap: 8px; padding: 8px 15px; background-color: #f1f3f5; border-radius: 20px; text-decoration: none; font-weight: 500; color: #495057; border: 1px solid #dee2e6; transition: background-color 0.2s, box-shadow 0.2s; max-width: 100%; overflow: hidden; }
+.attachment-display-list a:hover { background-color: #e9ecef; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+.attachment-display-list svg { width: 16px; height: 16px; flex-shrink: 0; }

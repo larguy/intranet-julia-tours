@@ -5,6 +5,7 @@ import { useAuth } from '../../context/AuthContext';
 import Editor from '../Editor';
 import DOMPurify from 'dompurify';
 import './InformacionPorSector.css';
+import './PostStyles.css';
 
 
 
@@ -223,12 +224,12 @@ const InformacionPorSector = () => {
                                     <ul className="attachment-display-list"> {/* Usamos la clase correcta para los estilos */}
                                         {post.attachments.map(att => {
 
-                                            const { icon, className } = getAttachmentIcon(att.original_filename);
+                                            const { className } = getAttachmentIcon(att.original_filename);
 
                                             return (
                                                 <li key={att.id} className={className}>
                                                     <a href={`${process.env.REACT_APP_API_URL}${att.url}`} target="_blank" rel="noopener noreferrer">
-                                                        {icon} {/* Mantenemos solo el icono dinámico */}
+                                                        
                                                         {att.original_filename}
                                                     </a>
                                                 </li>

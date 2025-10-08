@@ -407,6 +407,12 @@ def handle_single_post(current_user, post_id):
         db.session.commit()
         return jsonify({'message': 'Publicación eliminada correctamente'}), 200
 
+@app.route('/novedades/all', methods=['GET'])
+@token_required
+def get_all_novedades(current_user):
+    novedades = Novedad.query.order_by(Novedad.created_at.desc()).all()
+    return jsonify([n.to_dict() for n in novedades])
+
 @app.route('/novedades', methods=['GET', 'POST'])
 @token_required
 def handle_novedades(current_user):
@@ -417,15 +423,34 @@ def handle_novedades(current_user):
         return jsonify({'novedades': [n.to_dict() for n in pagination.items], 'total_pages': pagination.pages, 'current_page': pagination.page, 'has_next': pagination.has_next, 'has_prev': pagination.has_prev})
 
     if request.method == 'POST':
-        if not (current_user.role == UserRole.SUPERUSER or (current_user.role == UserRole.EDITOR and current_user.sector == 'Administracion')):
+        if not (current_user.role == UserRole.SUPERUSER or current_user.role == UserRole.EDITOR):
             return jsonify({'message': 'Permiso denegado para publicar novedades'}), 403
+        
         data = request.get_json()
-        asunto, content = data.get('asunto'), data.get('content')
-        if not asunto or not content: return jsonify({'message': 'Faltan datos (asunto o contenido)'}), 400
-        new_novedad = Novedad(asunto=asunto, content=content, user_id=current_user.id)
+        asunto = data.get('asunto')
+        content = data.get('content')
+        attachments_data = data.get('attachments', []) 
+
+        if not asunto or (not content and not attachments_data):
+            return jsonify({'message': 'Se requiere un asunto y contenido o al menos un archivo adjunto.'}), 400
+        
+        new_novedad = Novedad(asunto=asunto, content=content or '', user_id=current_user.id)
+
+        for att_data in attachments_data:
+            new_attachment = Attachment(
+                original_filename=att_data.get('name'),
+                saved_filename=att_data.get('url').split('/')[-1],
+                mimetype='application/octet-stream',
+                novedad=new_novedad 
+            )
+            db.session.add(new_attachment)
+
+
         db.session.add(new_novedad)
-        db.session.commit()
-        return jsonify(new_novedad.to_dict()), 201
+        db.session.commit() 
+
+
+    return jsonify(new_novedad.to_dict()), 201
 
 @app.route('/novedades/<int:novedad_id>', methods=['DELETE'])
 @token_required
@@ -802,6 +827,8 @@ def change_cumple_gif(current_user, user_id):
             return jsonify({'message': 'No se pudieron obtener nuevos GIFs de Giphy'}), 500
     except Exception as e:
         return jsonify({'message': f'Error al contactar con Giphy: {str(e)}'}), 500
+
+
 
 if __name__ == '__main__':
     with app.app_context():
