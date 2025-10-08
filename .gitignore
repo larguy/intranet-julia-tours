@@ -1,23 +1,66 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+# ########## #
+#  GENERAL   #
+# ########## #
 
-# dependencies
-/node_modules
-/.pnp
-.pnp.js
+# Archivos de configuración de IDEs y editores
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
 
-# testing
-/coverage
-
-# production
-/build
-
-# misc
+# Archivos de sistema operativo
 .DS_Store
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
+Thumbs.db
+Desktop.ini
 
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
+# Archivos de registro y temporales
+*.log
+*.tmp
+*.temp
+
+# ################# #
+#  ENTORNO BACKEND  #
+# ################# #
+
+# Entorno virtual de Python
+backend/venv/
+
+# Archivos compilados de Python
+backend/__pycache__/
+*.pyc
+
+# Archivos de configuración local del backend (si los tuvieras)
+# backend/instance/
+# backend/config.local.py
+
+# Archivos de subida de usuarios
+backend/uploads/
+
+# ################# #
+#  ENTORNO FRONTEND #
+# ################# #
+
+# Dependencias de Node.js
+frontend/node_modules/
+
+# Archivos de registro de npm
+frontend/npm-debug.log*
+frontend/yarn-debug.log*
+frontend/yarn-error.log*
+
+# Carpeta de construcción de producción
+frontend/build/
+
+# Archivos de entorno
+# IMPORTANTE: Nunca subas archivos .env que contengan secretos.
+# Solo se debe subir un archivo .env.example si es necesario.
+frontend/.env
+frontend/.env.local
+frontend/.env.development.local
+frontend/.env.test.local
+frontend/.env.production.local
+frontend/.env.development
+frontend/.env.production
+
+# Archivos de configuración específicos del servidor (como el de IIS)
+frontend/public/web.config
