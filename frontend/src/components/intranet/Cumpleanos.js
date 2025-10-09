@@ -91,14 +91,14 @@ const Cumpleanos = () => {
 
     return (
         <div className="cumpleanos-page-container">
-            <h1>
-                {cumpleanerosDeHoy.length > 0 ? "¡Feliz Cumpleaños!" : "Hoy no hay Cumpleaños"}
-            </h1>
+            
             
             {cumpleanerosDeHoy.length > 0 && (
                 <div className="birthday-container today">
+                    
                     {cumpleanerosDeHoy.map(cumpleanero => (
                         <div key={cumpleanero.id} className="cumpleanero-card">
+                            <h2>¡Feliz Cumpleaños!</h2>
                             <img src={`${process.env.REACT_APP_API_URL}/uploads/${cumpleanero.profile_image}`} alt={cumpleanero.nombre} className="profile-pic-cumple" />
                             <h3>{cumpleanero.nombre} {cumpleanero.apellido}</h3>
                             <p>{cumpleanero.sector}</p>
