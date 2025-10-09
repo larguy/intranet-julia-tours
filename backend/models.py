@@ -252,8 +252,8 @@ class Evento(db.Model):
 
 class Inscripcion(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    evento_id = db.Column(db.Integer, db.ForeignKey('evento.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id', ondelete='CASCADE'), nullable=False)
+    evento_id = db.Column(db.Integer, db.ForeignKey('evento.id', ondelete='CASCADE'), nullable=False)
     participa = db.Column(db.Boolean, nullable=False, default=False)
     detalles_usuario = db.Column(db.Text, nullable=True)
 
